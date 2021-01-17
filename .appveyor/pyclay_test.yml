@@ -1,0 +1,73 @@
+version: 2.6.dev.build{build}
+branches:
+  only:
+    - develop
+skip_tags: true
+skip_branch_with_pr: true
+image: Ubuntu1804
+max_jobs: 1
+environment:
+  MN_SALT:
+    secure: y0lD3CmSDZQx7zsNkyqUQyFtiV2eoewZ94bxSk9yoUrc6Mfgto18k7hzAitfVxs124Pai3GGvBpDZppuXikFPQ==
+  MN_SECRET:
+    secure: +ZRoLZnCowoJI/RvYao/XzgDz4usFDcZRX5aRoTBHUY=
+  DOCKER_USERNAME:
+    secure: BjCQHIN21F+sOx1mQICY5Q==
+  DOCKER_PASSWORD:
+    secure: 4tDbnFmVNXL6+VAwzvb61w==
+  DOCKER_CLI_EXPERIMENTAL: enabled
+  matrix:
+    - TEST_ENV: py36 linux/amd64 normal
+    - TEST_ENV: py36 linux/amd64 slim
+    - TEST_ENV: py36 linux/amd64 alpine
+    - TEST_ENV: py36 linux/arm64 normal
+    - TEST_ENV: py36 linux/arm64 slim
+    - TEST_ENV: py36 linux/arm64 alpine
+    - TEST_ENV: py36 linux/arm/v7 normal
+    - TEST_ENV: py36 linux/arm/v7 slim
+    - TEST_ENV: py36 linux/arm/v7 alpine
+    - TEST_ENV: py37 linux/amd64 normal
+    - TEST_ENV: py37 linux/amd64 slim
+    - TEST_ENV: py37 linux/amd64 alpine
+    - TEST_ENV: py37 linux/arm64 normal
+    - TEST_ENV: py37 linux/arm64 slim
+    - TEST_ENV: py37 linux/arm64 alpine
+    - TEST_ENV: py37 linux/arm/v7 normal
+    - TEST_ENV: py37 linux/arm/v7 slim
+    - TEST_ENV: py37 linux/arm/v7 alpine
+    - TEST_ENV: py38 linux/amd64 normal
+    - TEST_ENV: py38 linux/amd64 slim
+    - TEST_ENV: py38 linux/amd64 alpine
+    - TEST_ENV: py38 linux/arm64 normal
+    - TEST_ENV: py38 linux/arm64 slim
+    - TEST_ENV: py38 linux/arm64 alpine
+    - TEST_ENV: py38 linux/arm/v7 normal
+    - TEST_ENV: py38 linux/arm/v7 slim
+    - TEST_ENV: py38 linux/arm/v7 alpine
+install:
+  - |
+    sudo apt-get update
+    sudo apt-get install -y binfmt-support qemu qemu-user-static jq
+    echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
+    sudo service docker restart
+build_script:
+  - |
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    docker run -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
+      -v ${HOME}/.docker/config.json:/root/.docker/config.json:ro \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e MN_SALT=$MN_SALT \
+      -e MN_SECRET=$MN_SECRET \
+      -w=$APPVEYOR_BUILD_FOLDER \
+      bscdataclay/continuous-integration:testing \
+      ./test_all_features_in_env.sh $TEST_ENV
+    EXIT_CODE=$?
+    docker logout
+    exit $EXIT_CODE
+notifications:
+  - provider: Email
+    to:
+      - dgasull@bsc.es
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true

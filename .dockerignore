@@ -1,0 +1,17 @@
+.appveyor
+.idea
+allure-results
+*.Dockerfile
+BUILD_MATRIX.txt
+*.iml
+target
+*/target*
+*/stubs*
+test_*
+deploy*
+.gitignore
+build.sh
+dockercfg.json
+stubs
+
+

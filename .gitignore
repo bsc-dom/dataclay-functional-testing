@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+target/
+stubs/
+.idea/
+allure-results/
+*.iml
+dockercfg.json

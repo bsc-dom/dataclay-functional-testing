@@ -1,0 +1,45 @@
+version: 2.6.dev.build{build}
+branches:
+  only:
+    - develop
+skip_tags: true
+skip_branch_with_pr: true
+image: Ubuntu1804
+max_jobs: 1
+environment:
+  DOCKER_USERNAME:
+    secure: d9s0OSEPlE156nPrhrsNnA==
+  DOCKER_PASSWORD:
+    secure: TO42yeTsoNEkuoRQ9ES7MQ==
+  DOCKER_CLI_EXPERIMENTAL: enabled
+  matrix:
+    - ENVIRONMENT: jdk8
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
+    - ENVIRONMENT: jdk11
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
+    - PYVER: py36
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
+    - PYVER: py37
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
+    - PYVER: py38
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
+build_script:
+  - |
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    docker run -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
+      -v ${HOME}/.docker/config.json:/root/.docker/config.json:ro \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -w=$APPVEYOR_BUILD_FOLDER \
+      --entrypoint=/scripts/entrypoint_deploy.sh \
+      bscdataclay/continuous-integration:testing \
+      ./deploy.sh bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile $ENVIRONMENT $PLATFORMS true
+    EXIT_CODE=$?
+    docker logout
+    exit $EXIT_CODE
+notifications:
+  - provider: Email
+    to:
+      - dgasull@bsc.es
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
