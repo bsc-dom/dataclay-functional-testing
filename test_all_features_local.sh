@@ -17,7 +17,7 @@ for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
         for TEST in ${TESTS[@]}; do
           ./test_feature.sh $TEST $ENVIRONMENT $ARCH $IMAGE
           RESULT=$?
-          if [ $?RESULT -ne 0 ]; then
+          if [ $RESULT -ne 0 ]; then
               EXIT_CODE=$RESULT
           fi
         done

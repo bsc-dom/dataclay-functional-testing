@@ -24,17 +24,15 @@ def md5(*args):
         m.update(part)
     return m.hexdigest()
 
-def calculate_history_id(test_result):    
-    for label in  test_result["labels"]: 
-        if label["name"] == "feature":
-            feature_name = label["value"]
-    scenario_name = test_result["name"]
+
+def calculate_history_id(feature_name, scenario_name, test_result):
     parts = [feature_name, scenario_name]
     for param in test_result['parameters']:
         param_name = param["name"]
         param_value = param["value"]
         parts.append(f"{param_name}={param_value}")
     return md5(*parts) 
+
 
 def exists_param(params, param_name):
     for param in params: 
@@ -59,14 +57,30 @@ if __name__ == "__main__":
                     params = []
                     if "parameters" in test_result:
                         params = test_result["parameters"]
-
                     for i in range(len(param_keywords)):
                         if not exists_param(params, param_keywords[i]):
                             new_param = {"name":param_keywords[i], "value": attributes.parameters[i]}
                             params.append(new_param)
                             print(f"Added parameter: {new_param}")
                     test_result['parameters'] = params
-                    history_id = calculate_history_id(test_result)
+
+                    for label in  test_result["labels"]:
+                        if label["name"] == "feature":
+                            feature_name = label["value"]
+                    scenario_name = test_result["name"]
+
+                    # change names
+                    test_result["fullName"] = f"{feature_name}: {scenario_name}"
+                    story_label = {"name":"story", "value":f"{scenario_name}"}
+                    test_result["labels"].append(story_label)
+                    suite_label = {"name":"suite", "value":f"{feature_name}"}
+                    test_result["labels"].append(suite_label)
+                    testClass_label = {"name":"testClass", "value":f"{scenario_name}"}
+                    test_result["labels"].append(testClass_label)
+
+
+                    # change historyId
+                    history_id = calculate_history_id(feature_name, scenario_name, test_result)
                     if "historyId" in test_result:
                         previous_history_id = test_result['historyId']
                     else:
