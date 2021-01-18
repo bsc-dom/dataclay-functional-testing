@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 3 ]; then
     echo "ERROR: missing parameter. Usage $0 ENVIRONMENT ARCH IMAGE"
     exit 1
 fi
