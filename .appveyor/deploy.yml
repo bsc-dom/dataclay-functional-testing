@@ -17,11 +17,11 @@ environment:
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
     - ENVIRONMENT: jdk11
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
-    - PYVER: py36
+    - ENVIRONMENT: py36
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
-    - PYVER: py37
+    - ENVIRONMENT: py37
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
-    - PYVER: py38
+    - ENVIRONMENT: py38
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64
 build_script:
   - |
