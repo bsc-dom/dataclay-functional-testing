@@ -3,10 +3,8 @@ package steps;
 import es.bsc.dataclay.api.BackendID;
 import es.bsc.dataclay.api.DataClay;
 import es.bsc.dataclay.api.DataClayException;
-
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
-import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -25,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class StepDefinitions {
+public class CommonSteps {
 
 	/** App client properties path. */
 	public static String appClientPropertiesPath;
@@ -46,6 +44,10 @@ public class StepDefinitions {
 	public static String modelStr = "";
 
 	public static List<Parameter> TEST_PARAMETERS;
+
+	public static Person_Stub person;
+	public static BackendID backendID;
+
 
 	static {
 		TEST_PARAMETERS = new ArrayList<>();
@@ -80,7 +82,7 @@ public class StepDefinitions {
 	@Attachment
 	@Given("A configuration file {string} to be used in management operations")
 	public void aConfigurationFileToBeUsedInManagementOperations(String mgmClientProperties) throws IOException {
-		Allure.getLifecycle().updateTestCase(testResult -> testResult.setParameters(StepDefinitions.TEST_PARAMETERS));
+		Allure.getLifecycle().updateTestCase(testResult -> testResult.setParameters(CommonSteps.TEST_PARAMETERS));
 		Path path = Paths.get(mgmClientProperties);
 		Orchestrator.managementClientPropertiesPath = toAbsolutePathForDockerVolume(mgmClientProperties);
 		Allure.attachment("client.properties", Utils.readAllBytes(path));
@@ -195,56 +197,5 @@ public class StepDefinitions {
 	public void iFinishTheSession() throws DataClayException {
 		DataClay.finish();
 	}
-
-	private static Person_Stub person;
-	private static BackendID backendID;
-
-	@Then("I run make persistent for an object")
-    public void iRunMakePersistentForAnObject() {
-    	String pName = "Bob";
-    	int pAge = 33;
-		person = StubFactory.newPerson(pName, pAge);
-		person.makePersistent();
-    	
-    	People_Stub people = StubFactory.newPeople();
-    	people.add(person);
-    	people.makePersistent();
-    	
-    	System.out.println(people);
-    	
-    }
-
-	@Then("I run make persistent for an object with alias {string}")
-	public void iRunMakePersistentForAnObjectWithAlias(String alias) {
-		String pName = "Bob";
-		int pAge = 33;
-		Person_Stub p = StubFactory.newPerson(pName, pAge);
-		p.makePersistent(alias);
-	}
-
-	@Then("I get the object with alias {string}")
-	public void iGetTheObjectWithAlias(String alias) {
-		Person_Stub p = StubFactory.getByAlias(alias);
-		System.out.println(p);
-	}
-
-	@Given("I set object to be read only")
-	public void iSetTheObjecToBeReadOnly() {
-		person.setObjectReadOnly();
-	}
-
-	@When("I call new replica")
-	public void iCallNewReplica() {
-		backendID = person.newReplica();
-	}
-
-	@Then("I get object locations and I see object is located in two locations")
-	public void iGetObjectLocationsAndISeeObjectIsLocated() {
-		Set<BackendID> backends = person.getAllLocations();
-		System.out.println(backends);
-		org.junit.Assert.assertEquals(2, backends.size());
-		org.junit.Assert.assertTrue(backends.contains(backendID));
-	}
-
 
 }

@@ -58,6 +58,11 @@ if [ "$SHARE_BUILDERX" = "false" ]; then
   DOCKER_BUILDER=$(docker buildx create)
   docker buildx use $DOCKER_BUILDER
   docker buildx inspect --bootstrap
+
+  docker build -f packager.jdk.Dockerfile -t bscdataclay/continuous-integration:javaclay-jar .
+  JAVACLAY_CONTAINER=$(docker create --rm  bscdataclay/continuous-integration:javaclay-jar)
+  docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
+  docker rm $JAVACLAY_CONTAINER
 fi
 
 deploy docker buildx build -f $PREFIX.$DOCKER_FILE -t $IMAGE_NAME \

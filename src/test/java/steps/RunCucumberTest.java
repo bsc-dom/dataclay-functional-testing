@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
         features = "src/test/resources/features",
         plugin = {
             "io.qameta.allure.cucumber5jvm.AllureCucumber5Jvm",
-            "progress",
+            "pretty",
             "summary"
         }
 )

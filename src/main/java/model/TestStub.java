@@ -5,6 +5,8 @@
 package model;
 
 import es.bsc.dataclay.api.BackendID;
+import es.bsc.dataclay.util.ids.MetaClassID;
+import es.bsc.dataclay.util.ids.ObjectID;
 
 import java.util.Set;
 
@@ -41,4 +43,10 @@ public interface TestStub {
 	BackendID newReplica();
 
 	Set<BackendID> getAllLocations();
+
+	ObjectID getObjectID();
+
+	MetaClassID getMetaClassID();
+
+	BackendID getHint();
 }

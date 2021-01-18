@@ -18,4 +18,8 @@ public class Person extends DataClayObject implements Person_Stub {
 	public int getAge() {
 		return age;
 	}
+
+	public void setAge(int newAge) {
+		this.age = newAge;
+	}
 }
