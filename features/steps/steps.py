@@ -55,6 +55,7 @@ def get_docker_images_to_use(context):
         javadockerimg = f"develop"
     return dockerimg, javadockerimg
 
+
 def dockercompose(context, docker_compose_path, command, command_output=None):
     """Calls docker-compose
         :param docker_compose_path: the docker-compose.yml file path
@@ -189,7 +190,7 @@ def clean_scenario(context):
     """
     for docker_compose_path in ALL_DOCKER_FILES_USED:
         dataclaysrv(context, docker_compose_path, "kill")
-    cmd = "/bin/bash resources/clean_scenario.sh"
+    cmd = "/bin/bash resources/utils/clean_scenario.sh"
     print(cmd)
     os.system(cmd)
 
@@ -206,6 +207,73 @@ def step_impl(context, user_name, cfgfile_path):
     test_user = create_user(user_name)
     test_user.client_properties_path = to_absolute_path_for_docker_volumes(context, cfgfile_path)
     allure.attach.file(cfgfile_path, "mgm_cfgfile.properties", attachment_type=allure.attachment_type.TEXT)
+
+@given('"{user_name}" creates a docker network named "{network_name}"')
+def step_impl(context, user_name, network_name):
+    """
+    Create docker network
+    :param context: the current feature context
+    :type context: context
+    :param user_name: user name
+    :type user_name: string
+    :param network_name: name of docker network to create
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+
+    cmd = f"docker network create {network_name}"
+    print(cmd)
+    os.system(cmd)
+
+@given('"{user_name}" connect to docker network "{network_name}"')
+def step_impl(context, user_name, network_name):
+    """
+    Attach to docker network
+    :param context: the current feature context
+    :type context: context
+    :param user_name: user name
+    :type user_name: string
+    :param network_name: name of docker network
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+
+    cmd = f"/bin/bash resources/utils/connect_network.sh {network_name}"
+    print(cmd)
+    os.system(cmd)
+
+@then('"{user_name}" disconnects from docker network "{network_name}"')
+def step_impl(context, user_name, network_name):
+    """
+    Attach to docker network
+    :param context: the current feature context
+    :type context: context
+    :param user_name: user name
+    :type user_name: string
+    :param network_name: name of docker network
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+
+    cmd = f"/bin/bash resources/utils/disconnect_network.sh {network_name}"
+    print(cmd)
+    os.system(cmd)
+
+@then('"{user_name}" removes docker network named "{network_name}"')
+def step_impl(context, user_name, network_name):
+    """
+    Remove docker network
+    :param context: the current feature context
+    :type context: context
+    :param user_name: user name
+    :type user_name: string
+    :param network_name: name of docker network
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+    cmd = f"docker network rm {network_name}"
+    print(cmd)
+    os.system(cmd)
 
 
 @given(u'"{user_name}" deploys dataClay with docker-compose.yml file "{docker_compose_path}"')
@@ -353,11 +421,11 @@ def step_impl(context, user_name, namespace, stubs_path):
     dataclaycmd(context, test_user.client_properties_path,
                 f"GetStubs {test_user.account_name} {test_user.account_pwd} {namespace} /home/dataclayusr/stubs", command_mount_points = command_mount_points)
 
-@given('"{user_name}" waits until dataClay has "{num_nodes}" backends')
-def step_impl(context, user_name, num_nodes):
+@given('"{user_name}" waits until dataClay has {num_nodes} backends of "{language}" language')
+def step_impl(context, user_name, num_nodes, language):
     test_user = get_user(user_name)
     dataclaycmd(context, test_user.client_properties_path,
-                f"WaitForBackends python {num_nodes}")
+                f"WaitForBackends {language} {num_nodes}")
 
 
 @given('"{user_name}" starts a new session')

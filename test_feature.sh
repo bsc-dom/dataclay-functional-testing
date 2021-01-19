@@ -1,7 +1,5 @@
 #!/bin/bash
 function test_feature {
-  echo "Creating testing network"
-  docker network create $TEST_NETWORK
   PLATFORM=""
   if [ "$ARCH" != "linux/amd64" ]; then
     PLATFORM="--platform $ARCH"
@@ -17,8 +15,7 @@ function test_feature {
   # Config.json could be mounted from outside docker, copy it to avoid re-mounting a volume dir
   cat ${HOME}/.docker/config.json > $PWD/dockercfg.json
   set +e
-  docker run --network=$TEST_NETWORK \
-    $PLATFORM \
+  docker run $PLATFORM \
     -e HOST_PWD=$PWD \
     -e HOST_USER_ID=$(id -u) \
     -e HOST_GROUP_ID=$(id -g) \
@@ -39,7 +36,6 @@ function prepare_docker {
 }
 
 function clean {
-  docker network rm $TEST_NETWORK 2>/dev/null
   rm -rf $PWD/stubs
   rm -rf $PWD/target
   rm -f $PWD/dockercfg.json
@@ -59,7 +55,6 @@ TESTNAME=$1
 ENVIRONMENT=$2
 ARCH=$3
 IMAGE=$4
-TEST_NETWORK=dataclay-testing-network
 prepare_docker
 clean
 test_feature

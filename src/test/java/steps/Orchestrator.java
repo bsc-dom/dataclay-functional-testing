@@ -162,7 +162,7 @@ public class Orchestrator {
 		for (String dockerComposePath : Orchestrator.ALL_DOCKER_FILES_USED) {
 			Orchestrator.cleanDataClay(dockerComposePath);
 		}
-		String command = "/bin/bash resources/clean_scenario.sh";
+		String command = "/bin/bash resources/utils/clean_scenario.sh";
 		System.out.println(command);
 		runProcess(command, null);
 	}
@@ -172,17 +172,51 @@ public class Orchestrator {
 	 * @param networkName Name of network
 	 */
 	public static void createDockerNetwork(final String networkName) {
-		String command = "docker network create dataclay-testing-" + networkName;
+		if (!networkName.startsWith("dataclay-testing")) {
+			throw new RuntimeException("Docker network name must have the prefix 'dataclay-testing'");
+		}
+		String command = "docker network create " + networkName;
 		System.out.println(command);
 		runProcess(command, null);
 	}
+
+	/**
+	 * Connect to docker network
+	 * @param networkName Name of network
+	 */
+	public static void connectToDockerNetwork(final String networkName) {
+		if (!networkName.startsWith("dataclay-testing")) {
+			throw new RuntimeException("Docker network name must have the prefix 'dataclay-testing'");
+		}
+		String command = "/bin/bash resources/utils/connect_network.sh " + networkName;
+		System.out.println(command);
+		runProcess(command, null);
+	}
+
+
+	/**
+	 * Disconnect from docker network
+	 * @param networkName Name of network
+	 */
+	public static void disconnectFromDockerNetwork(final String networkName) {
+		if (!networkName.startsWith("dataclay-testing")) {
+			throw new RuntimeException("Docker network name must have the prefix 'dataclay-testing'");
+		}
+		String command = "/bin/bash resources/utils/disconnect_network.sh " + networkName;
+		System.out.println(command);
+		runProcess(command, null);
+	}
+
 
 	/**
 	 * Remove docker network
 	 * @param networkName Name of network
 	 */
 	public static void removeDockerNetwork(final String networkName) {
-		String command = "docker network rm dataclay-testing-" + networkName;
+		if (!networkName.startsWith("dataclay-testing")) {
+			throw new RuntimeException("Docker network name must have the prefix 'dataclay-testing'");
+		}
+		String command = "docker network rm " + networkName;
 		System.out.println(command);
 		runProcess(command, null);
 	}

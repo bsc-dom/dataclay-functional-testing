@@ -43,6 +43,7 @@ public class CommonSteps {
 
 	/**
 	 * Return absolute path in host to be used as a docker volume
+	 *
 	 * @param path
 	 * @return
 	 */
@@ -64,7 +65,17 @@ public class CommonSteps {
 		Orchestrator.createDockerNetwork(networkName);
 	}
 
-	@And("{string} removes a docker network named {string}")
+	@And("{string} connect to docker network {string}")
+	public void connectToDockerNetwork(String userName, String networkName) {
+		Orchestrator.connectToDockerNetwork(networkName);
+	}
+
+	@And("{string} disconnects from docker network {string}")
+	public void disconnectFromDockerNetwork(String userName, String networkName) {
+		Orchestrator.disconnectFromDockerNetwork(networkName);
+	}
+
+	@And("{string} removes docker network named {string}")
 	public void removesDockerNetworkNamed(final String userName, final String networkName) {
 		Orchestrator.removeDockerNetwork(networkName);
 	}
@@ -76,7 +87,6 @@ public class CommonSteps {
 				"WaitForDataClayToBeAlive 10 5");
 		Allure.attachment("docker-compose.yml", Utils.readAllBytes(Paths.get(dockerComposePath)));
 	}
-
 
 
 	@And("{string} has a session file {string} to be used in test application")
@@ -122,8 +132,8 @@ public class CommonSteps {
 	public void createsADatacontractAllowingAccessToDatasetToUser(String userName, String dataSet, String userSubscriber) {
 		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
 		Orchestrator.dataClayCMD(user.clientPropertiesPath,
-				"NewDataContract " + user.testAccount + " " +  user.testPassword +
-				" " + dataSet + " " + userSubscriber);
+				"NewDataContract " + user.testAccount + " " + user.testPassword +
+						" " + dataSet + " " + userSubscriber);
 
 	}
 
@@ -136,7 +146,7 @@ public class CommonSteps {
 		mountPoints.add(toAbsolutePathForDockerVolume(modelPath) + ":/home/dataclayusr/model:rw");
 		Orchestrator.dataClayCMD(user.clientPropertiesPath,
 				"NewModel " + user.testAccount + " " + user.testPassword
-				+ " " + namespace + " /home/dataclayusr/model java", mountPoints);
+						+ " " + namespace + " /home/dataclayusr/model java", mountPoints);
 		Files.walk(Paths.get(srcPath))
 				.filter(Files::isRegularFile)
 				.forEach(Utils::createModelStr);
@@ -150,16 +160,17 @@ public class CommonSteps {
 		mountPoints.add(toAbsolutePathForDockerVolume(stubsPath) + ":/home/dataclayusr/stubs:rw");
 		Orchestrator.dataClayCMD(user.clientPropertiesPath,
 				"GetStubs " + user.testAccount + " " + user.testPassword
-				+ " " + namespace + " /home/dataclayusr/stubs", mountPoints);
+						+ " " + namespace + " /home/dataclayusr/stubs", mountPoints);
 		user.stubsFactory = new StubFactory(stubsPath);
 	}
 
 
-	@Given("{string} waits until dataClay has {string} backends")
-	public void waitsUntilDataClayHasBackends(final String userName, String numBackends) throws IOException {
+	@Given("{string} waits until dataClay has {int} backends of {string} language")
+	public void waitsUntilDataClayHasBackends(final String userName, int numBackends,
+											  String language) throws IOException {
 		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
 		Orchestrator.dataClayCMD(user.clientPropertiesPath,
-				"WaitForBackends java " + numBackends);
+				"WaitForBackends " + language + " " + numBackends);
 	}
 
 	@Given("{string} starts a new session")
@@ -173,4 +184,6 @@ public class CommonSteps {
 	public void finishesTheSession(String userName) throws DataClayException {
 		DataClay.finish();
 	}
+
 }
+
