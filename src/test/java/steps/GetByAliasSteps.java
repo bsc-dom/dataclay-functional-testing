@@ -11,17 +11,20 @@ import java.util.Set;
 
 public class GetByAliasSteps {
 
-	@Then("I run make persistent for an object with alias {string}")
-	public void iRunMakePersistentForAnObjectWithAlias(String alias) {
+	@Then("{string} runs make persistent for an object with alias {string}")
+	public void runsMakePersistentForAnObjectWithAlias(String userName, String alias) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
 		String pName = "Bob";
 		int pAge = 33;
-		Person_Stub p = StubFactory.newPerson(pName, pAge);
+		Person_Stub p = user.stubsFactory.newPerson(pName, pAge);
 		p.makePersistent(alias);
 	}
 
-	@Then("I get the object with alias {string}")
-	public void iGetTheObjectWithAlias(String alias) {
-		Person_Stub p = StubFactory.getByAlias(alias);
+	@Then("{string} gets the object with alias {string}")
+	public void getsTheObjectWithAlias(String userName, String alias) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+
+		Person_Stub p = user.stubsFactory.getByAlias(alias);
 		System.out.println(p);
 	}
 

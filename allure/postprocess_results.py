@@ -48,11 +48,11 @@ if __name__ == "__main__":
         param_keywords = ["1. test_language", "2. jdk_version", "3. operating system",
                           "4. architecture", "5. docker image"]
 
+        print("Post-processing results")
         print(f"Params: {attributes.parameters}")
         for file in os.listdir(attributes.test_result_path):
             if file.endswith("result.json"):
                 with open(f"{attributes.test_result_path}/{file}", 'r+') as f:
-                    print(f"-- Processing {file} --")
                     test_result = json.load(f)
                     params = []
                     if "parameters" in test_result:
@@ -61,23 +61,40 @@ if __name__ == "__main__":
                         if not exists_param(params, param_keywords[i]):
                             new_param = {"name":param_keywords[i], "value": attributes.parameters[i]}
                             params.append(new_param)
-                            print(f"Added parameter: {new_param}")
+                            #print(f"Added parameter: {new_param}")
                     test_result['parameters'] = params
-
-                    for label in  test_result["labels"]:
+                    labels = test_result["labels"]
+                    for label in labels:
                         if label["name"] == "feature":
                             feature_name = label["value"]
+
                     scenario_name = test_result["name"]
 
                     # change names
                     test_result["fullName"] = f"{feature_name}: {scenario_name}"
-                    story_label = {"name":"story", "value":f"{scenario_name}"}
-                    test_result["labels"].append(story_label)
-                    suite_label = {"name":"suite", "value":f"{feature_name}"}
-                    test_result["labels"].append(suite_label)
-                    testClass_label = {"name":"testClass", "value":f"{scenario_name}"}
-                    test_result["labels"].append(testClass_label)
 
+                    add_suite = True
+                    add_testClass = True
+                    add_story = True
+                    story_label = {"name":"story", "value":f"{scenario_name}"}
+                    suite_label = {"name":"suite", "value":f"{feature_name}"}
+                    testClass_label = {"name":"testClass", "value":f"{scenario_name}"}
+                    for label in labels:
+                        if label["name"] == "suite":
+                            add_suite = False
+                            label["value"] = f"{feature_name}"
+                        if label["name"] == "testClass":
+                            add_testClass = False
+                            label["value"] = f"{scenario_name}"
+                        if label["name"] == "story":
+                            add_story = False
+                            label["value"] = f"{scenario_name}"
+                    if add_story:
+                        test_result["labels"].append(story_label)
+                    if add_suite:
+                        test_result["labels"].append(suite_label)
+                    if add_suite:
+                        test_result["labels"].append(testClass_label)
 
                     # change historyId
                     history_id = calculate_history_id(feature_name, scenario_name, test_result)
@@ -86,12 +103,12 @@ if __name__ == "__main__":
                     else:
                         previous_history_id = "None"
                     test_result['historyId'] = history_id
-                    if history_id != previous_history_id:
-                        print(f"Changed history id {previous_history_id} to {history_id}")
+                    #if history_id != previous_history_id:
+                    #    print(f"Changed history id {previous_history_id} to {history_id}")
 
                     f.seek(0)        # <--- should reset file position to the beginning.
                     json.dump(test_result, f, indent=4)
                     f.truncate()     # remove remaining part
-                    print(f"-- Finished processing {file} --")
+        print("Results post-processed!")
     except Exception:
         traceback.print_exc()

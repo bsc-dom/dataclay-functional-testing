@@ -11,22 +11,31 @@ import java.util.Set;
 
 public class NewReplicaSteps {
 
-	@Given("I set object to be read only")
-	public void iSetTheObjecToBeReadOnly() {
-		CommonSteps.person.setObjectReadOnly();
+	@Given("{string} sets object to be read only")
+	public void setsTheObjecToBeReadOnly(final String userName) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+		person.setObjectReadOnly();
 	}
 
-	@When("I call new replica")
-	public void iCallNewReplica() {
-		CommonSteps.backendID = CommonSteps.person.newReplica();
+	@When("{string} calls new replica")
+	public void callsNewReplica(final String userName) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+		BackendID backendID = person.newReplica();
+		user.userObjects.put("personBackendID", backendID);
+
 	}
 
-	@Then("I get object locations and I see object is located in two locations")
-	public void iGetObjectLocationsAndISeeObjectIsLocated() {
-		Set<BackendID> backends = CommonSteps.person.getAllLocations();
+	@Then("{string} gets object locations and sees object is located in two locations")
+	public void getsObjectLocationsAndISeeObjectIsLocated(final String userName) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+		BackendID backendID = (BackendID) user.userObjects.get("personBackendID");
+		Set<BackendID> backends = person.getAllLocations();
 		System.out.println(backends);
 		org.junit.Assert.assertEquals(2, backends.size());
-		org.junit.Assert.assertTrue(backends.contains(CommonSteps.backendID));
+		org.junit.Assert.assertTrue(backends.contains(backendID));
 	}
 
 

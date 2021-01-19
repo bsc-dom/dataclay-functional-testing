@@ -5,14 +5,12 @@ import es.bsc.dataclay.api.DataClay;
 import es.bsc.dataclay.api.DataClayException;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
-import io.qameta.allure.Attachment;
 import io.qameta.allure.model.Parameter;
 import io.qameta.allure.util.ResultsUtils;
-import model.People_Stub;
 import model.Person_Stub;
 
 import java.io.IOException;
@@ -21,33 +19,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class CommonSteps {
 
-	/** App client properties path. */
-	public static String appClientPropertiesPath;
-
-	/** App session properties path. */
-	public static String appSessionPropertiesPath;
-
-	/** Account name. */
-	public static String testAccount;
-
-	/** Password in use. */
-	public static String testPassword;
-
-	/** Stubs path. */
-	public static String stubsPath;
-
-	/** String representing model. */
-	public static String modelStr = "";
-
 	public static List<Parameter> TEST_PARAMETERS;
-
-	public static Person_Stub person;
-	public static BackendID backendID;
-
 
 	static {
 		TEST_PARAMETERS = new ArrayList<>();
@@ -57,17 +32,13 @@ public class CommonSteps {
 
 	@Before
 	public void beforeScenario() {
-		/*Allure.label("1. test_language", "java");
-		Allure.label("2. jdk_version", System.getProperty("jdk"));
-		Allure.label("3. operating system", System.getProperty("os"));
-		Allure.label("4. architecture", System.getProperty("arch"));
-		Allure.label("5. docker image", System.getProperty("image"));*/
 		Orchestrator.prepareImages();
+		Orchestrator.cleanScenario();
 	}
 
 	@After
 	public void afterScenario() {
-		Orchestrator.cleanDataClay();
+		Orchestrator.cleanScenario();
 	}
 
 	/**
@@ -79,43 +50,41 @@ public class CommonSteps {
 		return System.getProperty("host_pwd") + "/" + path.toString();
 	}
 
-	@Attachment
-	@Given("A configuration file {string} to be used in management operations")
-	public void aConfigurationFileToBeUsedInManagementOperations(String mgmClientProperties) throws IOException {
+	@And("{string} has a configuration file {string} to be used to connect to dataClay")
+	public void hasAConfigurationFileToBeUsedToConnectToDataClay(String userName, String clientPropertiesPath) throws IOException {
 		Allure.getLifecycle().updateTestCase(testResult -> testResult.setParameters(CommonSteps.TEST_PARAMETERS));
-		Path path = Paths.get(mgmClientProperties);
-		Orchestrator.managementClientPropertiesPath = toAbsolutePathForDockerVolume(mgmClientProperties);
+		Path path = Paths.get(clientPropertiesPath);
+		Orchestrator.TestUser testUser = Orchestrator.createTestUser(userName);
+		testUser.clientPropertiesPath = toAbsolutePathForDockerVolume(clientPropertiesPath);
 		Allure.attachment("client.properties", Utils.readAllBytes(path));
 	}
 
-	@Attachment
-	@Given("A docker-compose.yml file for deployment at {string}")
-	public void aDockerComposeFileForDeploymentAt(String dockerComposePath) throws IOException {
-		Orchestrator.addDockerComposeForDeployment(dockerComposePath);
+	@And("{string} creates a docker network named {string}")
+	public void createsDockerNetworkNamed(final String userName, final String networkName) {
+		Orchestrator.createDockerNetwork(networkName);
+	}
+
+	@And("{string} removes a docker network named {string}")
+	public void removesDockerNetworkNamed(final String userName, final String networkName) {
+		Orchestrator.removeDockerNetwork(networkName);
+	}
+
+	@And("{string} deploys dataClay with docker-compose.yml file {string}")
+	public void deploysDataClayWithDockerComposeYmlFile(String userName, String dockerComposePath) throws IOException {
+		Orchestrator.startDataClay(dockerComposePath);
+		Orchestrator.dataClayCMD(Orchestrator.getTestUser(userName).clientPropertiesPath,
+				"WaitForDataClayToBeAlive 10 5");
 		Allure.attachment("docker-compose.yml", Utils.readAllBytes(Paths.get(dockerComposePath)));
 	}
 
 
-	@Given("I deploy dataClay with docker-compose")
-	public void iDeployDataClayWithDockercomposeyml() throws IOException {
-		Orchestrator.cleanDataClay();
-		Orchestrator.startDataClay();
-		Orchestrator.dataClayCMD("WaitForDataClayToBeAlive 10 5");
-	}
 
-	@Attachment
-	@Given("A configuration file {string} to be used in test application")
-	public void aConfigurationFileToBeUsedInTestApplication(String clientPropertiesPath) throws IOException {
-		Path path = Paths.get(clientPropertiesPath);
-		appClientPropertiesPath = toAbsolutePathForDockerVolume(clientPropertiesPath);
-		Allure.attachment("client.properties", Utils.readAllBytes(path));
-	}
-
-	@Attachment
-	@Given("A session file {string} to be used in test application")
-	public void aSessionFileToBeUsedInTestApplication(String sessionPropertiesPath) throws IOException {
+	@And("{string} has a session file {string} to be used in test application")
+	public void hasASessionFileToBeUsedInTestApplication(String userName, String sessionPropertiesPath) throws IOException {
 		String actualSessionPropPath = sessionPropertiesPath;
 		String testType = System.getenv("TEST_TYPE");
+		Orchestrator.TestUser testUser = Orchestrator.getTestUser(userName);
+
 		if (testType != null && testType.equals("local")) {
 			int lastBarIdx = sessionPropertiesPath.lastIndexOf("/");
 			String firstPart = sessionPropertiesPath.substring(0, lastBarIdx + 1);
@@ -123,79 +92,85 @@ public class CommonSteps {
 			String newSecondPart = "local" + secondPart;
 			actualSessionPropPath = firstPart + newSecondPart;
 			System.err.println("Actual session props: " + actualSessionPropPath);
-			appSessionPropertiesPath = toAbsolutePathForDockerVolume(actualSessionPropPath);
+			testUser.sessionPropertiesPath = toAbsolutePathForDockerVolume(actualSessionPropPath);
 		} else {
-			appSessionPropertiesPath = actualSessionPropPath;
+			testUser.sessionPropertiesPath = actualSessionPropPath;
 		}
 
 		Path path = Paths.get(actualSessionPropPath);
 		Allure.attachment("session.properties", Utils.readAllBytes(path));
 	}
 
-	@Given("I create an account named {string} and password {string}")
-	public void iCreateAnAccountNamedAndPassword(String accountName, String password) {
-		Orchestrator.dataClayCMD("NewAccount " + accountName + " " + password);
-		testAccount = accountName;
-		testPassword = password;
-	}
-	@Given("I create a dataset named {string}")
-	public void iCreateADatasetNamed(String dataSetName) {
-
-	}
-	@Given("I create a namespace named {string}")
-	public void iCreateANamespaceNamed(String namespaceName) {
-
-	}
-	@Given("I create a datacontract allowing access to dataset {string} to user {string}")
-	public void iCreateADatacontractAllowingAccessToDatasetToUser(String dataSet, String user) {
-		Orchestrator.dataClayCMD("NewDataContract " + testAccount + " " +  testPassword +
-				" " + dataSet + " " + user);
+	@And("{string} creates an account named {string} with password {string}")
+	public void createsAnAccountNamedWithPassword(String userName, String accountName, String password) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+				"NewAccount " + accountName + " " + password);
+		user.testAccount = accountName;
+		user.testPassword = password;
 	}
 
+	@And("{string} creates a dataset named {string}")
+	public void createsADatasetNamed(String arg0, String arg1) {
+	}
 
+	@And("{string} creates a namespace named {string}")
+	public void createsANamespaceNamed(String arg0, String arg1) {
+	}
 
-	@Attachment
-	@Given("I register a model located at {string} into namespace {string}")
-	public void iRegisterAModelLocatedAtAndCompiledIntoIntoNamespace(String srcPath, String namespace) throws IOException {
+	@And("{string} creates a datacontract allowing access to dataset {string} to user {string}")
+	public void createsADatacontractAllowingAccessToDatasetToUser(String userName, String dataSet, String userSubscriber) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+				"NewDataContract " + user.testAccount + " " +  user.testPassword +
+				" " + dataSet + " " + userSubscriber);
+
+	}
+
+	@And("{string} registers a model located at {string} into namespace {string}")
+	public void registersAModelLocatedAtIntoNamespace(String userName, String srcPath, String namespace) throws IOException {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
 		String modelPath = "target/classes";
 		List<String> mountPoints = new ArrayList<String>();
 		// do not mount testing directory
 		mountPoints.add(toAbsolutePathForDockerVolume(modelPath) + ":/home/dataclayusr/model:rw");
-		Orchestrator.dataClayCMD("NewModel " + testAccount + " " + testPassword
+		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+				"NewModel " + user.testAccount + " " + user.testPassword
 				+ " " + namespace + " /home/dataclayusr/model java", mountPoints);
 		Files.walk(Paths.get(srcPath))
 				.filter(Files::isRegularFile)
 				.forEach(Utils::createModelStr);
 	}
-	@Given("I get stubs from namespace {string} into {string} directory")
-	public void iGetStubsFromNamespaceIntoDirectory(String namespace, String stubsPath) {
+
+	@And("{string} get stubs from namespace {string} into {string} directory")
+	public void getStubsFromNamespaceIntoDirectory(String userName, String namespace, String stubsPath) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+
 		List<String> mountPoints = new ArrayList<String>();
 		mountPoints.add(toAbsolutePathForDockerVolume(stubsPath) + ":/home/dataclayusr/stubs:rw");
-		Orchestrator.dataClayCMD("GetStubs " + testAccount + " " + testPassword
+		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+				"GetStubs " + user.testAccount + " " + user.testPassword
 				+ " " + namespace + " /home/dataclayusr/stubs", mountPoints);
-		StubsClassLoader.initializeStubsClassLoader(stubsPath);
+		user.stubsFactory = new StubFactory(stubsPath);
 	}
 
-	@Given("I start extra nodes using {string}")
-	public void iStartExtraNodesUsingDockerComposeExtra(String dockerComposePath) throws IOException {
-		Orchestrator.dockerComposeCommand(dockerComposePath, "up -d");
-		Allure.attachment(dockerComposePath, Utils.readAllBytes(Paths.get(dockerComposePath)));
+
+	@Given("{string} waits until dataClay has {string} backends")
+	public void waitsUntilDataClayHasBackends(final String userName, String numBackends) throws IOException {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+				"WaitForBackends java " + numBackends);
 	}
 
-	@Given("I wait until dataClay has {string} backends")
-	public void iWaitUntilDataClayHasBackends(String numBackends) throws IOException {
-		Orchestrator.dataClayCMD("WaitForBackends java " + numBackends);
-	}
-
-	@Given("I start a new session")
-	public void iStartANewSession() throws DataClayException {
-		DataClay.setSessionFile(appSessionPropertiesPath);
+	@Given("{string} starts a new session")
+	public void startsANewSession(String userName) throws DataClayException {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		DataClay.setSessionFile(user.sessionPropertiesPath);
 		DataClay.init();
 	}
 
-	@Then("I finish the session")
-	public void iFinishTheSession() throws DataClayException {
+	@Then("{string} finishes the session")
+	public void finishesTheSession(String userName) throws DataClayException {
 		DataClay.finish();
 	}
-
 }

@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class StubsClassLoader {
 
-	/** Class loader for stubs. */
-	public static ClassLoader stubsClassLoader;
+	/** Class loader. */
+	private ClassLoader stubsClassLoader;
 
 	private static class ParentLastURLClassLoader extends ClassLoader {
 		private ChildURLClassLoader childClassLoader;
@@ -86,8 +86,7 @@ public class StubsClassLoader {
 		}
 	}
 
-
-	public static void initializeStubsClassLoader(final String stubsClassesFolder) { 
+	public StubsClassLoader(final String stubsClassesFolder) {
 		final File clDir = new File(stubsClassesFolder);
 		final List<URL> urls = new ArrayList<URL>();
 		try {
@@ -99,11 +98,11 @@ public class StubsClassLoader {
 		Thread.currentThread().setContextClassLoader(stubsClassLoader);
 	}
 
-	public static <K extends DataClayObject> K newInstance(final String className) { 
+	public <K extends DataClayObject> K newInstance(final String className) {
 		return newInstance(className, null, null);
 	}
 
-	public static <K extends DataClayObject> K newInstance(final String className, Class<?>[] paramTypes, final Object ... initArgs) { 
+	public <K extends DataClayObject> K newInstance(final String className, Class<?>[] paramTypes, final Object ... initArgs) {
 		K obj = null;
 		try {
 			final Class<?> clazz = stubsClassLoader.loadClass(className);
@@ -122,7 +121,7 @@ public class StubsClassLoader {
 	}
 
 
-	public static <K extends DataClayObject> K getByAlias(final String className, final String alias) {
+	public <K extends DataClayObject> K getByAlias(final String className, final String alias) {
 		K obj = null;
 		try {
 			final Class<?> clazz = stubsClassLoader.loadClass(className);

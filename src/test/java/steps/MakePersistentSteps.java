@@ -25,18 +25,24 @@ import java.util.Set;
 
 public class MakePersistentSteps {
 
-	@Then("I run make persistent for an object")
-    public void iRunMakePersistentForAnObject() {
+	@Then("{string} runs make persistent for an object")
+    public void runsMakePersistentForAnObject(final String userName) {
+
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+
     	String pName = "Bob";
     	int pAge = 33;
-		CommonSteps.person = StubFactory.newPerson(pName, pAge);
-		CommonSteps.person.makePersistent();
+		Person_Stub person = user.stubsFactory.newPerson(pName, pAge);
+		person.makePersistent();
     	
-    	People_Stub people = StubFactory.newPeople();
-    	people.add(CommonSteps.person);
+    	People_Stub people = user.stubsFactory.newPeople();
+    	people.add(person);
     	people.makePersistent();
     	
     	System.out.println(people);
+
+		user.userObjects.put("person", person);
+
     	
     }
 

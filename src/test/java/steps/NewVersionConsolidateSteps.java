@@ -33,10 +33,12 @@ import java.util.Set;
 
 public class NewVersionConsolidateSteps {
 
-	public static Person_Stub personVersion;
 
-	@When("I create new version of the object in backend {string}")
-	public void iCreateNewVersionOfTheObjectInBackend(String backendName) throws StorageException {
+	@When("{string} creates new version of the object in backend {string}")
+	public void createsNewVersionOfTheObjectInBackend(final String userName, String backendName) throws StorageException {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+
 		String backend2Hostname = null;
 		for (ExecutionEnvironment b : DataClay.getCommonLib().getExecutionEnvironmentsInfo(CommonMessages.Langs.LANG_JAVA).values()) {
 			if (b.getName().equals(backendName)) {
@@ -47,39 +49,49 @@ public class NewVersionConsolidateSteps {
 		org.junit.Assert.assertNotNull(backend2Hostname);
 		System.out.println("Backend hostname : " + backend2Hostname);
 		System.out.println("BACKENDS: " + DataClay.getBackends().values());
-		String id = CommonSteps.person.getObjectID()
-				+ ":" + CommonSteps.person.getHint()
-				+ ":" + CommonSteps.person.getMetaClassID();
+		String id = person.getObjectID()
+				+ ":" + person.getHint()
+				+ ":" + person.getMetaClassID();
 		System.out.println("Object id " + id);
 
 		String newObjectID = StorageItf.newVersion(id, false, backend2Hostname);
 		// get versioned object
-		personVersion = (Person_Stub) StorageItf.getByID(newObjectID);
+		Person_Stub personVersion = (Person_Stub) StorageItf.getByID(newObjectID);
+		user.userObjects.put("personVersion", personVersion);
 
 	}
 
 
-	@And("I update the version object")
-	public void iUpdateTheVersionObject() {
+	@And("{string} updates the version object")
+	public void updatesTheVersionObject(final String userName) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
 		personVersion.setAge(100);
 	}
-	@Then("I check that the original object was not modified")
-	public void iCheckThatTheOriginalObjectWasNotModified() {
-		org.junit.Assert.assertEquals(33, CommonSteps.person.getAge());
+	@Then("{string} checks that the original object was not modified")
+	public void checksThatTheOriginalObjectWasNotModified(final String userName) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
+		org.junit.Assert.assertEquals(33, person.getAge());
 		org.junit.Assert.assertEquals(100, personVersion.getAge());
 
 	}
 
-	@Then("I consolidate the version")
-	public void iConsolidateTheVersion() throws StorageException {
+	@Then("{string} consolidates the version")
+	public void consolidatesTheVersion(final String userName) throws StorageException {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
 		String id = personVersion.getObjectID()
 				+ ":" + personVersion.getMetaClassID()
 				+ ":" + personVersion.getHint();
 		StorageItf.consolidateVersion(id);
 	}
 
-	@And("I check that the original object was modified")
-	public void iCheckThatTheOriginalObjectWasModified() {
-		org.junit.Assert.assertEquals(100, CommonSteps.person.getAge());
+	@And("{string} checks that the original object was modified")
+	public void checksThatTheOriginalObjectWasModified(final String userName) {
+		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+		org.junit.Assert.assertEquals(100, person.getAge());
 	}
 }

@@ -38,14 +38,13 @@ def after_feature(context, feature):
     pass
 
 def before_scenario(context, scenario):
-    pass
+    clean_scenario(context)
 
 def after_scenario(context, scenario):
     if BEHAVE_DEBUG_LOGGING:
         save_logs(context)
-    clean_dataclay(context)
+    clean_scenario(context)
 
 def after_all(context):
     if BEHAVE_DEBUG_LOGGING:
         save_logs(context)
-    clean_dataclay(context)
