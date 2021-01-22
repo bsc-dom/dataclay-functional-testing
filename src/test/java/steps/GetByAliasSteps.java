@@ -13,7 +13,7 @@ public class GetByAliasSteps {
 
 	@Then("{string} runs make persistent for an object with alias {string}")
 	public void runsMakePersistentForAnObjectWithAlias(String userName, String alias) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		String pName = "Bob";
 		int pAge = 33;
 		Person_Stub p = user.stubsFactory.newPerson(pName, pAge);
@@ -22,7 +22,7 @@ public class GetByAliasSteps {
 
 	@Then("{string} gets the object with alias {string}")
 	public void getsTheObjectWithAlias(String userName, String alias) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 
 		Person_Stub p = user.stubsFactory.getByAlias(alias);
 		System.out.println(p);

@@ -13,14 +13,14 @@ public class NewReplicaSteps {
 
 	@Given("{string} sets object to be read only")
 	public void setsTheObjecToBeReadOnly(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub person = (Person_Stub) user.userObjects.get("person");
 		person.setObjectReadOnly();
 	}
 
 	@When("{string} calls new replica")
 	public void callsNewReplica(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub person = (Person_Stub) user.userObjects.get("person");
 		BackendID backendID = person.newReplica();
 		user.userObjects.put("personBackendID", backendID);
@@ -29,7 +29,7 @@ public class NewReplicaSteps {
 
 	@Then("{string} gets object locations and sees object is located in two locations")
 	public void getsObjectLocationsAndISeeObjectIsLocated(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub person = (Person_Stub) user.userObjects.get("person");
 		BackendID backendID = (BackendID) user.userObjects.get("personBackendID");
 		Set<BackendID> backends = person.getAllLocations();

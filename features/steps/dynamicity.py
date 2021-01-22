@@ -10,6 +10,6 @@ def step_impl(context, user_name, docker_compose_extra_path):
     :type user_name: string
     :return: None
     """
-
-    dockercompose(context, docker_compose_extra_path, "up -d")
+    test_user = get_or_create_user(user_name)
+    dockercompose(context, docker_compose_extra_path, test_user.docker_network, "up -d")
     allure.attach.file(docker_compose_extra_path, "docker-compose-extra.yml", attachment_type=allure.attachment_type.TEXT)

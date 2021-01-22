@@ -23,7 +23,7 @@ def step_impl(context, user_name):
     :param user_name: user name
     :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     person = test_user.user_objects["person"]
     person.new_replica()
 
@@ -37,7 +37,7 @@ def step_impl(context, user_name):
     :param user_name: user name
     :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     person = test_user.user_objects["person"]
     locations = person.get_all_locations()
     print(locations)

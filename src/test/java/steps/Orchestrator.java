@@ -4,10 +4,7 @@ import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.util.structs.Tuple;
 import io.qameta.allure.Allure;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -27,9 +24,6 @@ public class Orchestrator {
 
 	/** dataClay server command to kill dataClay docker instances. */
 	private static final String DATACLAYSRV_KILL_COMMAND = "kill";
-
-	/** All docker files used in test. */
-	public static Set<String> ALL_DOCKER_FILES_USED = new HashSet<>();
 
 	/** All test users. */
 	public static Map<String, TestUser> TEST_USERS = new HashMap<>();
@@ -52,6 +46,9 @@ public class Orchestrator {
 		/** Account password. */
 		public String testPassword;
 
+		/** User's docker network. */
+		public String dockerNetwork;
+
 		/** User stub factory. */
 		public StubFactory stubsFactory;
 
@@ -60,56 +57,50 @@ public class Orchestrator {
 
 		public TestUser(final String testUserName) {
 			this.name = testUserName;
+			this.dockerNetwork = "dataclay-testing-" + testUserName.replace(" ", "_");
 		}
 
 	}
 
 
 	/**
-	 * Run a command-line process
-	 * @param command Command to run
-	 * @param environmentVariables Environment variables applied
+	 * Execute command
+	 * @param command
+	 *            Command to execute
+	 * @param envVariables
+	 *            Environment variables for the command.
 	 */
-	private static void runProcess(final String command, final String[] environmentVariables) { 
-		try { 
-			// -- Linux --
+	public static void runProcess(final String command,
+										final Map<String, String> envVariables) {
+		String result = null;
+		try {
+			String[] commandArgs = command.split(" ");
+			final ProcessBuilder pb = new ProcessBuilder(commandArgs);
 
-			// Run a shell command
-			Process process = Runtime.getRuntime().exec(command, environmentVariables);
-
-			// Run a shell script
-			// Process process = Runtime.getRuntime().exec("path/to/hello.sh");
-
-			// -- Windows --
-			// Run a command
-			//Process process = Runtime.getRuntime().exec("cmd /c dir C:\\Users\\mkyong");
-			BufferedReader err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line;
-			while ((line = input.readLine()) != null) {
-				System.out.println(line);
+			// set environment variables
+			if (envVariables != null) {
+				pb.environment().putAll(envVariables);
 			}
-			while ((line = err.readLine()) != null) {
-				System.err.println(line);
-			}
-			System.out.flush();
-			System.err.flush();
-			try {
-				process.waitFor();  // wait for process to complete
-			} catch (InterruptedException e) {
-				System.err.println(e);  // "Can'tHappen"
-				return;
-			}
-			/*int exitVal = process.waitFor();
-			if (exitVal == 0) {
-				System.out.println("Success!");
-			} else {
-				//abnormal...
-			}*/
 
-		} catch (Exception e) {
+			final Process process = pb.start();
+
+			final StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), "ERROR");
+			final StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), "INFO");
+
+			// kick them off
+			errorGobbler.start();
+			outputGobbler.start();
+
+			// any error???
+			final int exitVal = process.waitFor();
+			errorGobbler.join();
+			outputGobbler.join();
+
+		} catch (final Throwable e) {
 			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
+
 	}
 
 	/**
@@ -159,9 +150,6 @@ public class Orchestrator {
 	 * Pull images
 	 */
 	public static void cleanScenario() {
-		for (String dockerComposePath : Orchestrator.ALL_DOCKER_FILES_USED) {
-			Orchestrator.cleanDataClay(dockerComposePath);
-		}
 		String command = "/bin/bash resources/utils/clean_scenario.sh";
 		System.out.println(command);
 		runProcess(command, null);
@@ -169,7 +157,7 @@ public class Orchestrator {
 
 	/**
 	 * Create docker network
-	 * @param networkName Name of network
+	 * @param networkName Name of user
 	 */
 	public static void createDockerNetwork(final String networkName) {
 		if (!networkName.startsWith("dataclay-testing")) {
@@ -224,18 +212,20 @@ public class Orchestrator {
 	/**
 	 * Run docker-compose command
 	 * @param dockerFilePath Docker file path
+	 * @param testNetwork Network to be used in docker compose
 	 * @param command Command to run
 	 */
-	public static void dockerComposeCommand(final String dockerFilePath, final String command) {
+	public static void dockerComposeCommand(final String dockerFilePath, final String testNetwork,
+											final String command) {
 		Tuple<String, String> dockerTags = getDockerImagesToUse();
 		String javaDockerImage = dockerTags.getFirst();
 		String pythonDockerImage = dockerTags.getSecond();
 		String pwd = System.getProperty("host_pwd");
-		if (!ALL_DOCKER_FILES_USED.contains(dockerFilePath)) {
-			ALL_DOCKER_FILES_USED.add(dockerFilePath);
-		}
+		String archImage = System.getProperty("arch", "");
+
 		String dockerComposeCmd = "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v " + pwd + ":" + pwd
 				+ " -e PYCLAY_IMAGE=" + pythonDockerImage + " -e JAVACLAY_IMAGE=" + javaDockerImage
+				+ " -e IMAGE_PLATFORM=" + archImage + " -e TESTING_NETWORK=" + testNetwork
 				+ " -w=" + pwd + " linuxserver/docker-compose -f " +  dockerFilePath + " " + command;
 		System.err.println(dockerComposeCmd);
 		runProcess(dockerComposeCmd, null);
@@ -244,22 +234,21 @@ public class Orchestrator {
 	/**
 	 * Run dataClay server commands via docker-compose
 	 * @param dockerComposeFilePath docker-compose file to use
+	 * @param testNetwork Network to be used in docker compose
 	 * @param command Command to run
 	 */
-	public static void dataClaySrv(final String dockerComposeFilePath, final String command) {
-		if (!ALL_DOCKER_FILES_USED.contains(dockerComposeFilePath)) {
-			ALL_DOCKER_FILES_USED.add(dockerComposeFilePath);
-		}
+	public static void dataClaySrv(final String dockerComposeFilePath,  final String testNetwork,
+								   final String command) {
 		switch (command) {
 				case DATACLAYSRV_START_COMMAND:
-					dockerComposeCommand(dockerComposeFilePath, "up -d");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork, "up -d");
 					break;
 				case DATACLAYSRV_STOP_COMMAND:
-					dockerComposeCommand(dockerComposeFilePath, "down");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork, "down");
 					break;
 				case DATACLAYSRV_KILL_COMMAND:
-					dockerComposeCommand(dockerComposeFilePath, "kill");
-					dockerComposeCommand(dockerComposeFilePath, "rm -s -f -v");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork,"kill");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork,"rm -s -f -v");
 					break;
 			}
 
@@ -270,10 +259,13 @@ public class Orchestrator {
 	 * Run dataClay command provided using client docker image
 	 * @param clientPropertiesPath Client properties to use
 	 * @param dataClayCommand Command to run
+	 * @param dockerNetwork test network to use
 	 * @param commandMountPoints Docker mount points like models or others
 	 */
-	public static void dataClayCMD(final String clientPropertiesPath, final String dataClayCommand, final List<String> commandMountPoints) {
-		String dockerNetwork = System.getProperty("test_network");
+	public static void dataClayCMD(final String clientPropertiesPath,
+								   final String dockerNetwork,
+								   final String dataClayCommand,
+								   final List<String> commandMountPoints) {
 		String archImage = System.getProperty("arch", "");
 		String mountPoints = "-v " + clientPropertiesPath + ":/home/dataclayusr/dataclay/cfgfiles/client.properties:ro";
 		if (commandMountPoints != null) { 
@@ -291,57 +283,56 @@ public class Orchestrator {
 		}
 		String userID = System.getProperty("userID");
 		String groupID = System.getProperty("groupID");
+
+		String debugFlag = "";
+		if (System.getenv("DEBUG").equals("True")) {
+			debugFlag = "--debug";
+		}
+
 		// --user " + userID + ":" + groupID + "
 		String command = "docker run --rm -e HOST_USER_ID=" + userID + " -e HOST_GROUP_ID=" + groupID + " "
 				+ platformParam + " --network=" + dockerNetwork + " " + mountPoints
-				+ " bscdataclay/client:" + dockerImage + " " + dataClayCommand;
+				+ " bscdataclay/client:" + dockerImage + " " + dataClayCommand + " " + debugFlag;
 		System.err.println(command);
 		runProcess(command, null);
 	}
 	/**
 	 * Run dataClay command provided using client docker image
 	 * @param clientPropertiesPath Client properties to use in command
+	 * @param dockerNetwork Network to use
 	 * @param dataClayCommand Command to run
 	 */
-	public static void dataClayCMD(final String clientPropertiesPath, final String dataClayCommand) {
-		dataClayCMD(clientPropertiesPath, dataClayCommand, null);
+	public static void dataClayCMD(final String clientPropertiesPath, final String dockerNetwork,
+								   final String dataClayCommand) {
+		dataClayCMD(clientPropertiesPath, dockerNetwork, dataClayCommand, null);
 	}
 
 	/**
 	 * Clean dataClay
 	 * @param dockerCompose Docker-compose file to use
+	 * @param testNetwork Network to be used in docker compose
+
 	 */
-	public static void cleanDataClay(final String dockerCompose) {
-		dataClaySrv(dockerCompose, DATACLAYSRV_KILL_COMMAND);
+	public static void cleanDataClay(final String dockerCompose, final String testNetwork) {
+		dataClaySrv(dockerCompose, testNetwork, DATACLAYSRV_KILL_COMMAND);
 	}
 
 	/**
 	 * Start dataClay
 	 * @param dockerCompose Docker-compose file to use
-
+	 * @param testNetwork Network to be used in docker compose
 	 */
-	public static void startDataClay(final String dockerCompose) {
-		dataClaySrv(dockerCompose, DATACLAYSRV_START_COMMAND);
+	public static void startDataClay(final String dockerCompose, final String testNetwork) {
+		dataClaySrv(dockerCompose, testNetwork, DATACLAYSRV_START_COMMAND);
 	}
 
 	/**
 	 * Stop dataClay
 	 * @param dockerCompose Docker-compose file to use
-
+	 * @param testNetwork Network to be used in docker compose
 	 */
-	public static void stopDataClay(final String dockerCompose) {
-		dataClaySrv(dockerCompose, DATACLAYSRV_STOP_COMMAND);
-	}
-
-	/**
-	 * Get or create test user with name provided
-	 * @param testUserName Name of user
-	 * @return Test user
-	 */
-	public static TestUser createTestUser(final String testUserName) {
-		TestUser user = new TestUser(testUserName);
-		TEST_USERS.put(testUserName, user);
-		return user;
+	public static void stopDataClay(final String dockerCompose, final String testNetwork) {
+		dataClaySrv(dockerCompose, testNetwork, DATACLAYSRV_STOP_COMMAND);
 	}
 
 	/**
@@ -349,8 +340,15 @@ public class Orchestrator {
 	 * @param testUserName Name of user
 	 * @return Test user
 	 */
-	public static TestUser getTestUser(final String testUserName) {
-		return TEST_USERS.get(testUserName);
+	public static TestUser getOrCreateTestUser(final String testUserName) {
+		TestUser user = TEST_USERS.get(testUserName);
+		if (user == null) {
+			user = new TestUser(testUserName);
+			createDockerNetwork(user.dockerNetwork);
+			TEST_USERS.put(testUserName, user);
+		}
+		connectToDockerNetwork(user.dockerNetwork);
+		return user;
 	}
 
 

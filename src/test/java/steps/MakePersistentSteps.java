@@ -28,7 +28,7 @@ public class MakePersistentSteps {
 	@Then("{string} runs make persistent for an object")
     public void runsMakePersistentForAnObject(final String userName) {
 
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 
     	String pName = "Bob";
     	int pAge = 33;

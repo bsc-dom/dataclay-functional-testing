@@ -39,10 +39,9 @@ function deploy {
   echo "$(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds elapsed."
 }
 #=============================================================================
-if [ "$#" -ne 5 ]; then
-    echo "ERROR: missing parameter. Usage ./deploy.sh IMAGE_NAME DOCKER_FILE ENVIRONMENT ARCH SHARE_BUILDERX where:"
+if [ "$#" -ne 4 ]; then
+    echo "ERROR: missing parameter. Usage ./deploy.sh IMAGE_NAME DOCKER_FILE ENVIRONMENT ARCH where:"
     echo " ARCH = (linux/amd64, linux/arm/v7, linux/arm64)"
-    echo " SHARE_BUILDERX = (true,false)"
     echo " ENVIRONMENT = (jdk8, jdk11, py36, py37, py38)"
     exit 1
 fi
@@ -51,31 +50,35 @@ DOCKER_FILE=$2
 ENVIRONMENT=$3
 PREFIX=$(sed -e 's/[0-9]*$//' <<< "$ENVIRONMENT")
 ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
-PLATFORMS=$4
-SHARE_BUILDERX=$5
-if [ "$SHARE_BUILDERX" = "false" ]; then
-  docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
-  DOCKER_BUILDER=$(docker buildx create)
-  docker buildx use $DOCKER_BUILDER
-  docker buildx inspect --bootstrap
 
-  docker build -f packager.jdk.Dockerfile -t bscdataclay/continuous-integration:javaclay-jar .
-  JAVACLAY_CONTAINER=$(docker create --rm  bscdataclay/continuous-integration:javaclay-jar)
-  docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
-  docker rm $JAVACLAY_CONTAINER
+# Check if already exists
+echo "Checking builder dataclay-builderx"
+RESULT=$(docker buildx ls)
+if [[ $RESULT == *"dataclay-builderx"* ]]; then
+  echo "Using already existing builder dataclay-builderx"
+  docker buildx use dataclay-builderx
+else
+  echo "Creating builder $BUILDERX_NAME"
+  docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+  docker buildx create --name dataclay-builderx
+  docker buildx use dataclay-builderx
+  docker buildx inspect --bootstrap
 fi
+
+docker build -f packager.jdk.Dockerfile -t bscdataclay/continuous-integration:javaclay-jar .
+JAVACLAY_CONTAINER=$(docker create --rm  bscdataclay/continuous-integration:javaclay-jar)
+docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
+docker rm $JAVACLAY_CONTAINER
 
 deploy docker buildx build -f $PREFIX.$DOCKER_FILE -t $IMAGE_NAME \
            --build-arg ENVIRONMENT=$ENVIRONMENT \
+           --build-arg REGISTRY=bscdataclay \
            --build-arg ENVIRONMENT_VERSION=$ENVIRONMENT_VERSION \
            --platform $PLATFORMS \
            --push .
 RESULT=$?
-# Remove builder
-if [ "$SHARE_BUILDERX" = "false" ]; then
-  docker buildx rm $DOCKER_BUILDER
-fi
 if [ $RESULT -ne 0 ]; then
    exit 1
 fi
+rm -rf ./testing-target
 echo " ===== Done! ====="

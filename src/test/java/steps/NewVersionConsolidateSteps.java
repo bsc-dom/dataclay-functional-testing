@@ -36,7 +36,7 @@ public class NewVersionConsolidateSteps {
 
 	@When("{string} creates new version of the object in backend {string}")
 	public void createsNewVersionOfTheObjectInBackend(final String userName, String backendName) throws StorageException {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub person = (Person_Stub) user.userObjects.get("person");
 
 		String backend2Hostname = null;
@@ -64,13 +64,13 @@ public class NewVersionConsolidateSteps {
 
 	@And("{string} updates the version object")
 	public void updatesTheVersionObject(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
 		personVersion.setAge(100);
 	}
 	@Then("{string} checks that the original object was not modified")
 	public void checksThatTheOriginalObjectWasNotModified(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub person = (Person_Stub) user.userObjects.get("person");
 		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
 		org.junit.Assert.assertEquals(33, person.getAge());
@@ -80,7 +80,7 @@ public class NewVersionConsolidateSteps {
 
 	@Then("{string} consolidates the version")
 	public void consolidatesTheVersion(final String userName) throws StorageException {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
 		String id = personVersion.getObjectID()
 				+ ":" + personVersion.getMetaClassID()
@@ -90,7 +90,7 @@ public class NewVersionConsolidateSteps {
 
 	@And("{string} checks that the original object was modified")
 	public void checksThatTheOriginalObjectWasModified(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		Person_Stub person = (Person_Stub) user.userObjects.get("person");
 		org.junit.Assert.assertEquals(100, person.getAge());
 	}

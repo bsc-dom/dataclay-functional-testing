@@ -14,23 +14,22 @@ class TestUser:
         self.session_properties_path = ""
         self.account_name = ""
         self.account_pwd = ""
+        self.docker_network = ""
 
 
 ALL_TEST_USERS = dict()
-ALL_DOCKER_FILES_USED = list()
 
-def create_user(user_name):
+def get_or_create_user(user_name):
     test_user = None
     if user_name not in ALL_TEST_USERS.keys():
         test_user = TestUser(user_name)
         ALL_TEST_USERS[user_name] = test_user
+        test_user.docker_network = f"dataclay-testing-{user_name}"
+        create_docker_network(test_user.docker_network)
     else:
         test_user = ALL_TEST_USERS.get(user_name)
+    connect_to_docker_network(test_user.docker_network)
     return test_user
-
-
-def get_user(user_name):
-    return ALL_TEST_USERS.get(user_name)
 
 
 def eprint(*args, **kwargs):
@@ -56,10 +55,12 @@ def get_docker_images_to_use(context):
     return dockerimg, javadockerimg
 
 
-def dockercompose(context, docker_compose_path, command, command_output=None):
+def dockercompose(context, docker_compose_path, testing_network, command, command_output=None):
     """Calls docker-compose
         :param docker_compose_path: the docker-compose.yml file path
         :type docker_compose_path: string
+        :param testing_network: name of network for docker compose
+        :type testing_network: str
         :param command: the docker-compose command to run
         :type command: string
         :param command_output: where to save docker command output
@@ -67,51 +68,54 @@ def dockercompose(context, docker_compose_path, command, command_output=None):
     """
 
     dockerimg, javadockerimg = get_docker_images_to_use(context)
-    if docker_compose_path not in ALL_DOCKER_FILES_USED:
-        ALL_DOCKER_FILES_USED.append(docker_compose_path)
+    arch = context.config.userdata['arch']
     pwd = to_absolute_path_for_docker_volumes(context, "")
     cmd = f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v {pwd}:{pwd} \
             -e PYCLAY_IMAGE={dockerimg} -e JAVACLAY_IMAGE={javadockerimg} \
+            -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} \
             -w={pwd} linuxserver/docker-compose -f {docker_compose_path} {command}"
     eprint(cmd)
     os.system(cmd)
 
 
-def dataclaysrv(context, docker_compose_file, command, command_output=None):
+def dataclaysrv(context, docker_compose_file, testing_network, command, command_output=None):
     """Manages dataClay docker services
         :param context: the current feature context
         :type context: context
         :param docker_compose_file: docker compose file to use
         :type docker_compose_file: str
+        :param testing_network: name of network for docker compose
+        :type testing_network: str
         :param command: command for dataclay services, it can be start, stop, kill,...
         :type command: string
         :param command_output: where to save docker command output
         :type command_output: string
     """
     if command == "start":
-        dockercompose(context, docker_compose_file, "up -d", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, "up -d", command_output=command_output)
     elif command == "stop":
-        dockercompose(context, docker_compose_file, "down -v", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, "down -v", command_output=command_output)
     elif command == "config":
-        dockercompose(context, docker_compose_file, "config", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, "config", command_output=command_output)
     elif command == "logs":
-        dockercompose(context, docker_compose_file, "logs --no-color", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, "logs --no-color", command_output=command_output)
     elif command == "kill":
-        dockercompose(context, docker_compose_file, "kill", command_output=command_output)
-        dockercompose(context, docker_compose_file, "rm -s -f -v", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, "kill", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, "rm -s -f -v", command_output=command_output)
 
-def dataclaycmd(context, client_properties_path, command, command_mount_points=None):
+def dataclaycmd(context, client_properties_path, testing_network, command, command_mount_points=None):
     """Runs a dataclaycmd (NewAccount, NewModel,...)
         :param context: the current feature context
         :type context: context
         :param client_properties_path: path client properties to be used
         :param client_properties_path: str
+        :param testing_network: name of network for docker compose
+        :type testing_network: str
         :param command: command to run
         :type command: string
         :param command_mount_points: folders to mount inside the container
         :type command_mount_points: string
     """
-    network = context.config.userdata['test_network']
     mount_points = f"-v {client_properties_path}:/home/dataclayusr/dataclay/cfgfiles/client.properties:ro"
     if command_mount_points is not None:
         for mnt_point in command_mount_points:
@@ -125,10 +129,12 @@ def dataclaycmd(context, client_properties_path, command, command_mount_points=N
         platform_arg = f"--platform {arch}"
     user_id = context.config.userdata['userID']
     group_id = context.config.userdata['groupID']
-
-    cmd = f"docker run --rm {platform_arg} --network={network} {mount_points} \
+    debug_flag = ""
+    if os.getenv("DEBUG") == "True":
+        debug_flag = "--debug"
+    cmd = f"docker run --rm {platform_arg} --network={testing_network} {mount_points} \
         -e HOST_USER_ID={user_id} -e HOST_GROUP_ID={group_id} \
-        bscdataclay/client:{javadockerimg} {command}"
+        bscdataclay/client:{javadockerimg} {command} {debug_flag}"
     print(cmd)
     os.system(cmd)
 
@@ -161,21 +167,25 @@ def prepare_images(context):
         os.system(f"docker pull {platform_arg} bscdataclay/dspython:{dockerimg}")
 
 
-def clean_dataclay(context, docker_compose_path):
+def clean_dataclay(context, docker_compose_path, testing_network):
     """Kills all dataClay docker services
         :param context: the current feature context
         :type context: context
         :param docker_compose_path: path to docker compose
         :type docker_compose_path: str
+        :param testing_network: name of network for docker compose
+        :type testing_network: str
     """
-    dataclaysrv(context, docker_compose_path, "kill")
+    dataclaysrv(context, docker_compose_path, testing_network, "kill")
 
-def save_logs(context, docker_compose_path):
+def save_logs(context, docker_compose_path, testing_network):
     """Save logs from dataClay docker services
         :param context: the current feature context
         :type context: context
         :param docker_compose_path: path to docker compose
         :type docker_compose_path: str
+        :param testing_network: name of network for docker compose
+        :type testing_network: str
     """
     pass
     #allure.attach.file(log_path, "dockerlogs.txt", attachment_type=allure.attachment_type.TEXT)
@@ -188,9 +198,55 @@ def clean_scenario(context):
         :param scenario: the current feature scenario
         :type scenario: scenario
     """
-    for docker_compose_path in ALL_DOCKER_FILES_USED:
-        dataclaysrv(context, docker_compose_path, "kill")
     cmd = "/bin/bash resources/utils/clean_scenario.sh"
+    print(cmd)
+    os.system(cmd)
+
+
+def create_docker_network(network_name):
+    """
+    Create docker network
+    :param network_name: name of docker network to create
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+
+    cmd = f"docker network create {network_name}"
+    print(cmd)
+    os.system(cmd)
+
+def connect_to_docker_network(network_name):
+    """
+    Attach to docker network
+    :param network_name: name of docker network
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+
+    cmd = f"/bin/bash resources/utils/connect_network.sh {network_name}"
+    print(cmd)
+    os.system(cmd)
+
+def disconnect_from_docker_network(network_name):
+    """
+    Attach to docker network
+    :param network_name: name of docker network
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+
+    cmd = f"/bin/bash resources/utils/disconnect_network.sh {network_name}"
+    print(cmd)
+    os.system(cmd)
+
+def remove_docker_network(network_name):
+    """
+    Remove docker network
+    :param network_name: name of docker network
+    """
+    if not network_name.startswith("dataclay-testing"):
+        raise Exception("Docker network name must start with dataclay-testing")
+    cmd = f"docker network rm {network_name}"
     print(cmd)
     os.system(cmd)
 
@@ -204,76 +260,9 @@ def step_impl(context, user_name, cfgfile_path):
         :param cfgfile_path: path to configuration file to be used
         :type cfgfile_path: string
     """
-    test_user = create_user(user_name)
+    test_user = get_or_create_user(user_name)
     test_user.client_properties_path = to_absolute_path_for_docker_volumes(context, cfgfile_path)
     allure.attach.file(cfgfile_path, "mgm_cfgfile.properties", attachment_type=allure.attachment_type.TEXT)
-
-@given('"{user_name}" creates a docker network named "{network_name}"')
-def step_impl(context, user_name, network_name):
-    """
-    Create docker network
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    :param network_name: name of docker network to create
-    """
-    if not network_name.startswith("dataclay-testing"):
-        raise Exception("Docker network name must start with dataclay-testing")
-
-    cmd = f"docker network create {network_name}"
-    print(cmd)
-    os.system(cmd)
-
-@given('"{user_name}" connect to docker network "{network_name}"')
-def step_impl(context, user_name, network_name):
-    """
-    Attach to docker network
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    :param network_name: name of docker network
-    """
-    if not network_name.startswith("dataclay-testing"):
-        raise Exception("Docker network name must start with dataclay-testing")
-
-    cmd = f"/bin/bash resources/utils/connect_network.sh {network_name}"
-    print(cmd)
-    os.system(cmd)
-
-@then('"{user_name}" disconnects from docker network "{network_name}"')
-def step_impl(context, user_name, network_name):
-    """
-    Attach to docker network
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    :param network_name: name of docker network
-    """
-    if not network_name.startswith("dataclay-testing"):
-        raise Exception("Docker network name must start with dataclay-testing")
-
-    cmd = f"/bin/bash resources/utils/disconnect_network.sh {network_name}"
-    print(cmd)
-    os.system(cmd)
-
-@then('"{user_name}" removes docker network named "{network_name}"')
-def step_impl(context, user_name, network_name):
-    """
-    Remove docker network
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    :param network_name: name of docker network
-    """
-    if not network_name.startswith("dataclay-testing"):
-        raise Exception("Docker network name must start with dataclay-testing")
-    cmd = f"docker network rm {network_name}"
-    print(cmd)
-    os.system(cmd)
 
 
 @given(u'"{user_name}" deploys dataClay with docker-compose.yml file "{docker_compose_path}"')
@@ -286,9 +275,9 @@ def step_impl(context, user_name, docker_compose_path):
         :param context: the current feature context
         :type docker_compose_path: docker compose to be used
     """
-    test_user = get_user(user_name)
-    dataclaysrv(context, docker_compose_path, "start")
-    dataclaycmd(context, test_user.client_properties_path, "WaitForDataClayToBeAlive 10 5")
+    test_user = get_or_create_user(user_name)
+    dataclaysrv(context, docker_compose_path, test_user.docker_network, "start")
+    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network, "WaitForDataClayToBeAlive 10 5")
     allure.attach.file(docker_compose_path, "docker-compose.yml", attachment_type=allure.attachment_type.TEXT)
 
 
@@ -304,7 +293,7 @@ def step_impl(context,  user_name, sessionfile_path):
     """
     actual_sessionfile_path = sessionfile_path
     test_type = os.getenv("TEST_TYPE")
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     if test_type is not None and test_type == "local":
         last_bar_index = sessionfile_path.rfind("/") + 1
         first_part = sessionfile_path[0:last_bar_index]
@@ -331,8 +320,8 @@ def step_impl(context, user_name, account_name, account_pwd):
         :param account_pwd: password of the account
         :type account_pwd: string
     """
-    test_user = get_user(user_name)
-    dataclaycmd(context, test_user.client_properties_path, f"NewAccount {account_name} {account_pwd}")
+    test_user = get_or_create_user(user_name)
+    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network, f"NewAccount {account_name} {account_pwd}")
     test_user.account_name = account_name
     test_user.account_pwd = account_pwd
 
@@ -375,8 +364,8 @@ def step_impl(context, user_name, dataset, user):
         :param user: name of the user with access to dataset
         :type user: string
     """
-    test_user = get_user(user_name)
-    dataclaycmd(context, test_user.client_properties_path,
+    test_user = get_or_create_user(user_name)
+    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network,
                 f"NewDataContract {test_user.account_name} {test_user.account_pwd} {dataset} {user}")
 
 
@@ -392,10 +381,10 @@ def step_impl(context, user_name, model_path, namespace):
         :param namespace: namespace of model being registered
         :type namespace: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     model_abs_path = to_absolute_path_for_docker_volumes(context, model_path)
     command_mount_points = [f"{model_abs_path}:/home/dataclayusr/model:ro"]
-    dataclaycmd(context,  test_user.client_properties_path,
+    dataclaycmd(context,  test_user.client_properties_path, test_user.docker_network,
                 f"NewModel {test_user.account_name} {test_user.account_pwd} {namespace} /home/dataclayusr/model python", command_mount_points=command_mount_points)
 
     for classfile in os.listdir(model_path):
@@ -415,16 +404,16 @@ def step_impl(context, user_name, namespace, stubs_path):
         :param stubs_path: location where to store stubs
         :type stubs_path: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     stubs_abs_path = to_absolute_path_for_docker_volumes(context, stubs_path)
     command_mount_points = [f"{stubs_abs_path}:/home/dataclayusr/stubs:rw"]
-    dataclaycmd(context, test_user.client_properties_path,
+    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network,
                 f"GetStubs {test_user.account_name} {test_user.account_pwd} {namespace} /home/dataclayusr/stubs", command_mount_points = command_mount_points)
 
 @given('"{user_name}" waits until dataClay has {num_nodes} backends of "{language}" language')
 def step_impl(context, user_name, num_nodes, language):
-    test_user = get_user(user_name)
-    dataclaycmd(context, test_user.client_properties_path,
+    test_user = get_or_create_user(user_name)
+    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network,
                 f"WaitForBackends {language} {num_nodes}")
 
 
@@ -436,7 +425,7 @@ def step_impl(context, user_name):
         :param user_name: user name
         :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     os.environ["DATACLAYSESSIONCONFIG"] = test_user.session_properties_path
     from dataclay.api import init
     init()

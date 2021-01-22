@@ -1,6 +1,7 @@
 ARG ENVIRONMENT
-FROM bscdataclay/dspython:develop.${ENVIRONMENT}-slim as pyclay-venv
-FROM bscdataclay/continuous-integration:testing-${ENVIRONMENT}-base
+ARG REGISTRY=""
+FROM ${REGISTRY}bscdataclay/dspython:develop.${ENVIRONMENT}-slim as pyclay-venv
+FROM ${REGISTRY}bscdataclay/continuous-integration:testing-${ENVIRONMENT}-base
 
 # Get pyClay
 ENV DATACLAY_VIRTUAL_ENV=/dataclay_venv

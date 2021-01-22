@@ -13,5 +13,5 @@ def step_impl(context, user_name):
     from test_namespace.classes import Person, People
     person = Person("Bob", 33)
     person.make_persistent()
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     test_user.user_objects["person"] = person

@@ -5,6 +5,7 @@
 package model;
 
 import es.bsc.dataclay.api.BackendID;
+import es.bsc.dataclay.util.ids.DataClayInstanceID;
 import es.bsc.dataclay.util.ids.MetaClassID;
 import es.bsc.dataclay.util.ids.ObjectID;
 
@@ -49,4 +50,6 @@ public interface TestStub {
 	MetaClassID getMetaClassID();
 
 	BackendID getHint();
+
+	void federate(final DataClayInstanceID extDataClayID, final boolean recursive);
 }

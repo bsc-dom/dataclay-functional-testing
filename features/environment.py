@@ -16,7 +16,6 @@ def setup_debug_logging(userdata):
 
 def before_all(context):
     setup_debug_logging(context.config.userdata)
-    prepare_images(context)
     if BEHAVE_DEBUG_LOGGING:
         os.environ['DEBUG'] = 'True'
         # clean logs

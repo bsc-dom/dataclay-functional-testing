@@ -12,7 +12,7 @@ def step_impl(context, user_name, backend_name):
     :type backend_name: str
     """
     from dataclay import api
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     person = test_user.user_objects["person"]
     backend_id = api.get_backend_id_by_name(backend_name)
     version_info =person.new_version(backend_id)
@@ -33,7 +33,7 @@ def step_impl(context, user_name):
     :param user_name: user name
     :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     versioned_person = test_user.user_objects["versioned_person"]
     versioned_person.age = 100
 
@@ -47,7 +47,7 @@ def step_impl(context, user_name):
     :param user_name: user name
     :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     versioned_person = test_user.user_objects["versioned_person"]
     person = test_user.user_objects["person"]
     assert person.age == 33
@@ -63,7 +63,7 @@ def step_impl(context, user_name):
     :param user_name: user name
     :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     versioned_person = test_user.user_objects["versioned_person"]
     version_info = test_user.user_objects["version_info"]
     versioned_person.consolidate_version(version_info[1])
@@ -78,6 +78,6 @@ def step_impl(context, user_name):
     :param user_name: user name
     :type user_name: string
     """
-    test_user = get_user(user_name)
+    test_user = get_or_create_user(user_name)
     person = test_user.user_objects["person"]
     assert person.age == 100

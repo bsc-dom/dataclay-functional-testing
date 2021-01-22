@@ -2,10 +2,11 @@ version: '3.4'
 networks:
   default:
     external:
-      name: "dataclay-testing-network"
+      name: "${TESTING_NETWORK}"
 services:
   dsjava2:
     image: "bscdataclay/dsjava:${JAVACLAY_IMAGE}"
+    platform: ${IMAGE_PLATFORM}
     ports:
       - "4127:4127"
     command: ""
@@ -22,6 +23,7 @@ services:
 
   dspython2:
     image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
+    platform: ${IMAGE_PLATFORM}
     command: ""
     ports:
       - "7867:7867"

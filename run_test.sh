@@ -27,12 +27,17 @@ if [ -z $HOST_USER_ID ] || [ -z $HOST_GROUP_ID ]; then
   HOST_USER_ID=$(id -u)
   HOST_GROUP_ID=$(id -g)
 fi
+DEBUG_FLAG=""
+if [ "$DEBUG" = "True" ]; then
+  echo "!! DEBUG is active"
+  DEBUG_FLAG="-Dlog4j.configurationFile=resources/common/cfgfiles/debug.xml"
+fi
 echo "*********** Running $TESTNAME tests using language=$LANGUAGE env=$ENVIRONMENT_VERSION image=$IMAGE arch=$ARCH ***********"
 if [[ $ENVIRONMENT == jdk* ]]; then
   #   -Dlog4j.configurationFile=src/test/resources/common/cfgfiles/log4j2.xml \
   java -cp $DATACLAY_JAR:target/functional-testing-1.0.0-SNAPSHOT-jar-with-dependencies.jar:target/functional-testing-1.0.0-SNAPSHOT-tests.jar \
     -Djdk="$ENVIRONMENT_VERSION" -Dimage="$IMAGE" -Darch="$ARCH" -Dhost_pwd="$HOST_PWD" -Dtest_network="dataclay-testing-network" \
-    -DuserID="$HOST_USER_ID" -DgroupID="$HOST_GROUP_ID" \
+    -DuserID="$HOST_USER_ID" -DgroupID="$HOST_GROUP_ID" $DEBUG_FLAG \
     -Dcucumber.options="features/$TESTNAME.feature" \
     org.junit.runner.JUnitCore steps.RunCucumberTest
   EXIT_CODE=$?

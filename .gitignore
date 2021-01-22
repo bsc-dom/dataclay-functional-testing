@@ -136,3 +136,4 @@ allure-results/
 *.iml
 dockercfg.json
 testing-target
+dataclay.jar

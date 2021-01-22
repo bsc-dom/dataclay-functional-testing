@@ -5,7 +5,7 @@ WORKDIR ${WORKING_DIR}
 
 # Install packages:
 RUN apt-get update \
-        && apt-get install --no-install-recommends -y --allow-unauthenticated python3.7 openjdk-${ENVIRONMENT_VERSION}-jdk \
+        && apt-get install --no-install-recommends -y --allow-unauthenticated jq python3.7 openjdk-${ENVIRONMENT_VERSION}-jdk \
         && rm -rf /var/lib/apt/lists/*
 COPY ./get-docker.sh /get-docker.sh
 RUN sh /get-docker.sh

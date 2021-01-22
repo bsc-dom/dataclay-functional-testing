@@ -1,27 +1,23 @@
 Feature: Make persistent
 
   Background: dataClay deployment
-    Given "User A" has a configuration file "resources/common/cfgfiles/client.properties" to be used to connect to dataClay
-      And "User A" has a session file "resources/common/cfgfiles/session.properties" to be used in test application
-      And "User A" creates a docker network named "dataclay-testing-network"
-      And "User A" connect to docker network "dataclay-testing-network"
-      And "User A" deploys dataClay with docker-compose.yml file "resources/makepersistent/docker-compose.yml"
-      And "User A" waits until dataClay has 1 backends of "java" language
-      And "User A" waits until dataClay has 1 backends of "python" language
-      And "User A" creates an account named "UserA" with password "UserA"
-      And "User A" creates a dataset named "datasetA"
-      And "User A" creates a namespace named "test_namespace"
-      And "User A" creates a datacontract allowing access to dataset "datasetA" to user "UserA"
-      And "User A" registers a model located at "resources/common/model" into namespace "test_namespace"
-      And "User A" get stubs from namespace "test_namespace" into "stubs" directory
+    Given "UserA" has a configuration file "resources/common/cfgfiles/client.properties" to be used to connect to dataClay
+      And "UserA" has a session file "resources/common/cfgfiles/session.properties" to be used in test application
+      And "UserA" deploys dataClay with docker-compose.yml file "resources/makepersistent/docker-compose.yml"
+      And "UserA" waits until dataClay has 1 backends of "java" language
+      And "UserA" waits until dataClay has 1 backends of "python" language
+      And "UserA" creates an account named "UserA" with password "UserA"
+      And "UserA" creates a dataset named "datasetA"
+      And "UserA" creates a namespace named "test_namespace"
+      And "UserA" creates a datacontract allowing access to dataset "datasetA" to user "UserA"
+      And "UserA" registers a model located at "resources/common/model" into namespace "test_namespace"
+      And "UserA" get stubs from namespace "test_namespace" into "stubs" directory
 
 
   Scenario: run a simple make persistent
-    Given "User A" starts a new session
-     Then "User A" runs make persistent for an object
-      And "User A" finishes the session
-      And "User A" disconnects from docker network "dataclay-testing-network"
-      And "User A" removes docker network named "dataclay-testing-network"
+    Given "UserA" starts a new session
+     Then "UserA" runs make persistent for an object
+      And "UserA" finishes the session
 
       
   #Scenario: run a LOCAL make persistent

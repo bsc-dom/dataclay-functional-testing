@@ -32,7 +32,6 @@ public class CommonSteps {
 
 	@Before
 	public void beforeScenario() {
-		Orchestrator.prepareImages();
 		Orchestrator.cleanScenario();
 	}
 
@@ -55,35 +54,16 @@ public class CommonSteps {
 	public void hasAConfigurationFileToBeUsedToConnectToDataClay(String userName, String clientPropertiesPath) throws IOException {
 		Allure.getLifecycle().updateTestCase(testResult -> testResult.setParameters(CommonSteps.TEST_PARAMETERS));
 		Path path = Paths.get(clientPropertiesPath);
-		Orchestrator.TestUser testUser = Orchestrator.createTestUser(userName);
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
 		testUser.clientPropertiesPath = toAbsolutePathForDockerVolume(clientPropertiesPath);
 		Allure.attachment("client.properties", Utils.readAllBytes(path));
 	}
 
-	@And("{string} creates a docker network named {string}")
-	public void createsDockerNetworkNamed(final String userName, final String networkName) {
-		Orchestrator.createDockerNetwork(networkName);
-	}
-
-	@And("{string} connect to docker network {string}")
-	public void connectToDockerNetwork(String userName, String networkName) {
-		Orchestrator.connectToDockerNetwork(networkName);
-	}
-
-	@And("{string} disconnects from docker network {string}")
-	public void disconnectFromDockerNetwork(String userName, String networkName) {
-		Orchestrator.disconnectFromDockerNetwork(networkName);
-	}
-
-	@And("{string} removes docker network named {string}")
-	public void removesDockerNetworkNamed(final String userName, final String networkName) {
-		Orchestrator.removeDockerNetwork(networkName);
-	}
-
 	@And("{string} deploys dataClay with docker-compose.yml file {string}")
 	public void deploysDataClayWithDockerComposeYmlFile(String userName, String dockerComposePath) throws IOException {
-		Orchestrator.startDataClay(dockerComposePath);
-		Orchestrator.dataClayCMD(Orchestrator.getTestUser(userName).clientPropertiesPath,
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+		Orchestrator.startDataClay(dockerComposePath, testUser.dockerNetwork);
+		Orchestrator.dataClayCMD(testUser.clientPropertiesPath, testUser.dockerNetwork,
 				"WaitForDataClayToBeAlive 10 5");
 		Allure.attachment("docker-compose.yml", Utils.readAllBytes(Paths.get(dockerComposePath)));
 	}
@@ -93,7 +73,7 @@ public class CommonSteps {
 	public void hasASessionFileToBeUsedInTestApplication(String userName, String sessionPropertiesPath) throws IOException {
 		String actualSessionPropPath = sessionPropertiesPath;
 		String testType = System.getenv("TEST_TYPE");
-		Orchestrator.TestUser testUser = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
 
 		if (testType != null && testType.equals("local")) {
 			int lastBarIdx = sessionPropertiesPath.lastIndexOf("/");
@@ -113,8 +93,8 @@ public class CommonSteps {
 
 	@And("{string} creates an account named {string} with password {string}")
 	public void createsAnAccountNamedWithPassword(String userName, String accountName, String password) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
-		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
 				"NewAccount " + accountName + " " + password);
 		user.testAccount = accountName;
 		user.testPassword = password;
@@ -130,8 +110,8 @@ public class CommonSteps {
 
 	@And("{string} creates a datacontract allowing access to dataset {string} to user {string}")
 	public void createsADatacontractAllowingAccessToDatasetToUser(String userName, String dataSet, String userSubscriber) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
-		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
 				"NewDataContract " + user.testAccount + " " + user.testPassword +
 						" " + dataSet + " " + userSubscriber);
 
@@ -139,12 +119,12 @@ public class CommonSteps {
 
 	@And("{string} registers a model located at {string} into namespace {string}")
 	public void registersAModelLocatedAtIntoNamespace(String userName, String srcPath, String namespace) throws IOException {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		String modelPath = "target/classes";
 		List<String> mountPoints = new ArrayList<String>();
 		// do not mount testing directory
 		mountPoints.add(toAbsolutePathForDockerVolume(modelPath) + ":/home/dataclayusr/model:rw");
-		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
 				"NewModel " + user.testAccount + " " + user.testPassword
 						+ " " + namespace + " /home/dataclayusr/model java", mountPoints);
 		Files.walk(Paths.get(srcPath))
@@ -154,11 +134,11 @@ public class CommonSteps {
 
 	@And("{string} get stubs from namespace {string} into {string} directory")
 	public void getStubsFromNamespaceIntoDirectory(String userName, String namespace, String stubsPath) {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 
 		List<String> mountPoints = new ArrayList<String>();
 		mountPoints.add(toAbsolutePathForDockerVolume(stubsPath) + ":/home/dataclayusr/stubs:rw");
-		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
 				"GetStubs " + user.testAccount + " " + user.testPassword
 						+ " " + namespace + " /home/dataclayusr/stubs", mountPoints);
 		user.stubsFactory = new StubFactory(stubsPath);
@@ -168,14 +148,14 @@ public class CommonSteps {
 	@Given("{string} waits until dataClay has {int} backends of {string} language")
 	public void waitsUntilDataClayHasBackends(final String userName, int numBackends,
 											  String language) throws IOException {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
-		Orchestrator.dataClayCMD(user.clientPropertiesPath,
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
 				"WaitForBackends " + language + " " + numBackends);
 	}
 
 	@Given("{string} starts a new session")
 	public void startsANewSession(String userName) throws DataClayException {
-		Orchestrator.TestUser user = Orchestrator.getTestUser(userName);
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
 		DataClay.setSessionFile(user.sessionPropertiesPath);
 		DataClay.init();
 	}
