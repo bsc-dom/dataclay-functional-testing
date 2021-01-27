@@ -12,7 +12,8 @@ def step_impl(context, user_name, alias):
     from test_namespace.classes import Person, People
     person = Person("Bob", 33)
     person.make_persistent(alias=alias)
-
+    test_user = get_or_create_user(user_name)
+    test_user.user_objects["person"] = person
 
 @then('"{user_name}" gets the object with alias "{alias}"')
 def step_impl(context, user_name, alias):

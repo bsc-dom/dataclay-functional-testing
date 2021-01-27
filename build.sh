@@ -15,6 +15,11 @@ function build {
   BUILD_ARCH=$4
   PREFIX=$(sed -e 's/[0-9]*$//' <<< "$ENVIRONMENT")
   ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
+  if [ "$PREFIX" == "jdk" ]; then
+      CONTAINER_ID=$(docker create --platform $BUILD_ARCH bscdataclay/dsjava:develop-slim)
+      docker cp $CONTAINER_ID:/home/dataclayusr/dataclay/dataclay.jar $PWD/dataclay.jar
+      docker rm $CONTAINER_ID
+  fi
   if [ "$BUILD_ARCH" = "linux/amd64" ]; then
     docker build -f $PREFIX.$DOCKER_FILE -t $IMAGE_NAME \
                --build-arg ENVIRONMENT=$ENVIRONMENT \
@@ -28,17 +33,17 @@ function build {
       echo "Using already existing builder dataclay-builderx"
       docker buildx use dataclay-builderx
     else
+      docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
       echo "Creating builder $BUILDERX_NAME"
       docker buildx create --driver-opt network=host --name dataclay-builderx
       docker buildx use dataclay-builderx
       docker buildx inspect --bootstrap
     fi
-
-    if [ "$PREFIX" == "jdk" ]; then
-          CONTAINER_ID=$(docker create bscdataclay/dsjava:develop-slim)
-          docker cp $CONTAINER_ID:/home/dataclayusr/dataclay/dataclay.jar $PWD/dataclay.jar
-          docker rm $CONTAINER_ID
+    if [ "$PREFIX" == "py" ]; then
+      docker tag bscdataclay/dspython:develop.${ENVIRONMENT}-slim localhost:5000/bscdataclay/dspython:develop.${ENVIRONMENT}-slim
+      docker push localhost:5000/bscdataclay/dspython:develop.${ENVIRONMENT}-slim
     fi
+
     COMMAND="docker buildx build -f $PREFIX.$DOCKER_FILE -t localhost:5000/$IMAGE_NAME \
                --platform $BUILD_ARCH \
                --build-arg REGISTRY=localhost:5000/ \
@@ -61,7 +66,7 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 DATACLAY_PACKAGING_PATH=$1
-BUILD_BASE="false"
+BUILD_BASE="true"
 BUILD_DATACLAY="true"
 ARCH="linux/amd64"
 shift
@@ -95,9 +100,7 @@ do
         --arch)
           shift
           ARCH=$1
-          BUILD_BASE="true"
           printMsg "Specified arch to build: $ARCH"
-          printWarn "Forced to build base testing images"
           ;;
         --environments)
           shift
@@ -128,10 +131,10 @@ done
 
 # create platform files
 if [ -z $SUPPORTED_PYTHON_VERSIONS ]; then
-  SUPPORTED_PYTHON_VERSIONS="3.7"
+  SUPPORTED_PYTHON_VERSIONS="3.6 3.7 3.8"
 fi
 if [ -z $SUPPORTED_JAVA_VERSIONS ]; then
-  SUPPORTED_JAVA_VERSIONS="11"
+  SUPPORTED_JAVA_VERSIONS="8 11"
 fi
 if [[ "$SUPPORTED_JAVA_VERSIONS" != *$DEFAULT_JAVA* ]]; then
   DEFAULT_JAVA=$(echo $SUPPORTED_JAVA_VERSIONS | cut -d' ' -f1)

@@ -24,7 +24,7 @@ def get_or_create_user(user_name):
     if user_name not in ALL_TEST_USERS.keys():
         test_user = TestUser(user_name)
         ALL_TEST_USERS[user_name] = test_user
-        test_user.docker_network = f"dataclay-testing-{user_name}"
+        test_user.docker_network = f"dataclay-testing-network"
         create_docker_network(test_user.docker_network)
     else:
         test_user = ALL_TEST_USERS.get(user_name)
@@ -123,20 +123,21 @@ def dataclaycmd(context, client_properties_path, testing_network, command, comma
     arch = context.config.userdata['arch']
     dockerimg, javadockerimg = get_docker_images_to_use(context)
 
-    # Do not force pull linux/amd64 images to allow local testing
-    platform_arg = ""
-    if arch != "linux/amd64":
-        platform_arg = f"--platform {arch}"
     user_id = context.config.userdata['userID']
     group_id = context.config.userdata['groupID']
     debug_flag = ""
     if os.getenv("DEBUG") == "True":
         debug_flag = "--debug"
-    cmd = f"docker run --rm {platform_arg} --network={testing_network} {mount_points} \
+    cmd = f"docker run --rm --platform {arch} --network={testing_network} {mount_points} \
         -e HOST_USER_ID={user_id} -e HOST_GROUP_ID={group_id} \
         bscdataclay/client:{javadockerimg} {command} {debug_flag}"
     print(cmd)
     os.system(cmd)
+
+def get_logicmodule_ip_of_user_network(user_name_network):
+    cmd = f"docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {user_name_network}_logicmodule"
+    print(cmd)
+    return os.popen(cmd).read().replace("'","")
 
 
 def to_absolute_path_for_docker_volumes(context, path):
@@ -430,7 +431,7 @@ def step_impl(context, user_name):
     from dataclay.api import init
     init()
 
-
+@given('"{user_name}" finishes the session')
 @then('"{user_name}" finishes the session')
 def step_impl(context, user_name):
     """ Finish a session

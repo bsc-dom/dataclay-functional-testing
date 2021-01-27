@@ -14,24 +14,36 @@ import java.nio.file.Paths;
 
 public class Federation {
 
-	@Given("{string} registers external dataClay named {string} with hostname {string} and port {int}")
+	@Given("{string} registers external dataClay with hostname {string} and port {int}")
 	public void registerExternalDataClayWithHostnameAndPort(String userName,
-															String externalDCName,
 															String hostname,
 															final int port) {
 		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		DataClayInstanceID externalDCid = DataClay.registerDataClay(hostname, port);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
+				"RegisterDataClay " + hostname + " " + port);
+	}
+
+	@And("{string} imports models in namespace {string} from dataClay at hostname {string} and port {int}")
+	public void importsModelFromDataClayNamed(String userName,
+											  String externalNamespace,
+											  String hostname, final int port) {
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
+		Orchestrator.dataClayCMD(user.clientPropertiesPath, user.dockerNetwork,
+				"ImportModelsFromExternalDataClay " + hostname + " " + port + " " + externalNamespace);
+	}
+
+	@And("{string} gets ID of external dataClay named {string} at hostname {string} and port {int}")
+	public void getExternalDataClayIDAt(String userName,
+										String externalDCName,
+											  String hostname,
+											  final int port) {
+		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
+		DataClayInstanceID externalDCid =  DataClay.getDataClayID(hostname, port);
+		System.out.println("Obtained external DC id : " + externalDCid);
 		user.userObjects.put("external-dc-" + externalDCName, externalDCid);
 	}
 
-	@And("{string} imports models in namespace {string} from dataClay named {string}")
-	public void importsModelFromDataClayNamed(String userName,
-											  String externalNamespace,
-											  String externalDCName) {
-		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		DataClayInstanceID externalDCid = (DataClayInstanceID) user.userObjects.get("external-dc-" + externalDCName);
-		DataClay.importModelsFromExternalDataClay(externalNamespace, externalDCid);
-	}
+
 
 	@When("{string} federates object to dataClay {string}")
 	public void federatesObjectToDataClay(String userName, String externalDCName) {
@@ -40,5 +52,4 @@ public class Federation {
 		DataClayInstanceID externalDCid = (DataClayInstanceID) user.userObjects.get("external-dc-" + externalDCName);
 		person.federate(externalDCid, true);
 	}
-
 }

@@ -48,6 +48,7 @@ fi
 IMAGE_NAME=$1
 DOCKER_FILE=$2
 ENVIRONMENT=$3
+PLATFORMS=$4
 PREFIX=$(sed -e 's/[0-9]*$//' <<< "$ENVIRONMENT")
 ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
 
@@ -65,6 +66,12 @@ else
   docker buildx inspect --bootstrap
 fi
 
+if [ "$PREFIX" == "jdk" ]; then
+  CONTAINER_ID=$(docker create bscdataclay/dsjava:develop-slim)
+  docker cp $CONTAINER_ID:/home/dataclayusr/dataclay/dataclay.jar $PWD/dataclay.jar
+  docker rm $CONTAINER_ID
+fi
+
 docker build -f packager.jdk.Dockerfile -t bscdataclay/continuous-integration:javaclay-jar .
 JAVACLAY_CONTAINER=$(docker create --rm  bscdataclay/continuous-integration:javaclay-jar)
 docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
@@ -72,7 +79,6 @@ docker rm $JAVACLAY_CONTAINER
 
 deploy docker buildx build -f $PREFIX.$DOCKER_FILE -t $IMAGE_NAME \
            --build-arg ENVIRONMENT=$ENVIRONMENT \
-           --build-arg REGISTRY=bscdataclay \
            --build-arg ENVIRONMENT_VERSION=$ENVIRONMENT_VERSION \
            --platform $PLATFORMS \
            --push .
@@ -81,4 +87,5 @@ if [ $RESULT -ne 0 ]; then
    exit 1
 fi
 rm -rf ./testing-target
+rm -f $PWD/dataclay.jar
 echo " ===== Done! ====="

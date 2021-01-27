@@ -18,6 +18,7 @@ public class GetByAliasSteps {
 		int pAge = 33;
 		Person_Stub p = user.stubsFactory.newPerson(pName, pAge);
 		p.makePersistent(alias);
+		user.userObjects.put("person", p);
 	}
 
 	@Then("{string} gets the object with alias {string}")

@@ -13,6 +13,8 @@ public final class StreamGobbler extends Thread {
 	private final InputStream is;
 	/** Type. */
 	private final String type;
+	/** Output builder. */
+	private final StringBuilder builder;
 
 	/**
 	 * Constructor
@@ -24,7 +26,12 @@ public final class StreamGobbler extends Thread {
 	StreamGobbler(final InputStream theis, final String thetype) {
 		this.is = theis;
 		this.type = thetype;
+		this.builder = new StringBuilder();
 		this.setDaemon(true);
+	}
+
+	public String getResult() {
+		return this.builder.toString();
 	}
 
 	@Override
@@ -39,7 +46,7 @@ public final class StreamGobbler extends Thread {
 					} else if (type.equals("INFO")) {
 						System.out.println(line);
 					}
-
+				builder.append(line);
 			}
 		} catch (final IOException ioe) {
 			ioe.printStackTrace();

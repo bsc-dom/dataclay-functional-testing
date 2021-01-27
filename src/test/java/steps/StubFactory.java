@@ -6,7 +6,7 @@ import model.Person_Stub;
 public class StubFactory {
 
 	/** Class loader. */
-	private StubsClassLoader stubsClassLoader;
+	public StubsClassLoader stubsClassLoader;
 
 	public StubFactory(final String stubsPath) {
 		stubsClassLoader = new StubsClassLoader(stubsPath);

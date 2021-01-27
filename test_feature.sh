@@ -1,13 +1,8 @@
 #!/bin/bash
 function test_feature {
-  PLATFORM=""
-  if [ "$ARCH" != "linux/amd64" ]; then
-    PLATFORM="--platform $ARCH"
-  fi
-
   # Copy compiled files from container to allow docker-in-docker via socket
   if [[ $ENVIRONMENT == jdk* ]]; then
-    CONTAINER_ID=$(docker create bscdataclay/continuous-integration:testing-$ENVIRONMENT)
+    CONTAINER_ID=$(docker create --platform $ARCH bscdataclay/continuous-integration:testing-$ENVIRONMENT)
     docker cp $CONTAINER_ID:/testing/target $PWD/target
     docker rm $CONTAINER_ID
   fi
@@ -15,7 +10,7 @@ function test_feature {
   # Config.json could be mounted from outside docker, copy it to avoid re-mounting a volume dir
   cat ${HOME}/.docker/config.json > $PWD/dockercfg.json
   set +e
-  docker run $PLATFORM \
+  COMMAND="docker run --platform $ARCH \
     -e HOST_PWD=$PWD \
     -e HOST_USER_ID=$(id -u) \
     -e HOST_GROUP_ID=$(id -g) \
@@ -26,18 +21,21 @@ function test_feature {
     -v $PWD/features:/testing/features:ro \
     -v $PWD/allure-results:/testing/allure-results:rw \
     -v $PWD/stubs:/testing/stubs:rw \
-    bscdataclay/continuous-integration:testing-$ENVIRONMENT $TESTNAME $ENVIRONMENT $ARCH $IMAGE
+    bscdataclay/continuous-integration:testing-$ENVIRONMENT $TESTNAME $ENVIRONMENT $ARCH $IMAGE"
+  echo $COMMAND
+  eval $COMMAND
   return $?
 }
 
 function prepare_docker {
   printf "Preparing multiarch... "
-  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes >/dev/null
+  docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64 >/dev/null
+  #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes >/dev/null
   printf "Done! \n"
 }
 
 function clean {
-  rm -rf $PWD/stubs
+  #rm -rf $PWD/stubs
   rm -rf $PWD/target
   rm -f $PWD/dockercfg.json
 }

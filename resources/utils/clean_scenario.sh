@@ -8,10 +8,11 @@ for network in $DATACLAY_TESTING_NETWORKS; do
     if [[ $IMAGE_NAME == *"bscdataclay"* ]]; then
       if [[ $IMAGE_NAME != *"continuous-integration"* ]]; then
         echo "        => Removing $i container of image $IMAGE_NAME"
-        docker rm -f $i
+        docker rm -v -f $i
       fi
     fi
   done
   resources/utils/disconnect_network.sh $network
   docker network rm $network
 done
+rm -rf /testing/stubs/*

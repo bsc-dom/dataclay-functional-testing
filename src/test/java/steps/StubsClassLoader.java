@@ -18,15 +18,15 @@ import java.util.List;
 public class StubsClassLoader {
 
 	/** Class loader. */
-	private ClassLoader stubsClassLoader;
+	public ClassLoader theClassLoader;
 
-	private static class ParentLastURLClassLoader extends ClassLoader {
+	private class ParentLastURLClassLoader extends ClassLoader {
 		private ChildURLClassLoader childClassLoader;
 
 		/**
 		 * This class allows me to call findClass on a classloader
 		 */
-		private static class FindClassClassLoader extends ClassLoader {
+		private class FindClassClassLoader extends ClassLoader {
 			public FindClassClassLoader(ClassLoader parent) {
 				super(parent);
 			}
@@ -41,7 +41,7 @@ public class StubsClassLoader {
 		 * This class delegates (child then parent) for the findClass method for a URLClassLoader.
 		 * We need this because findClass is protected in URLClassLoader
 		 */
-		private static class ChildURLClassLoader extends URLClassLoader {
+		private class ChildURLClassLoader extends URLClassLoader {
 			private FindClassClassLoader realParent;
 			public ChildURLClassLoader( URL[] urls, FindClassClassLoader realParent) {
 				super(urls, null);
@@ -94,8 +94,7 @@ public class StubsClassLoader {
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
-		stubsClassLoader = new ParentLastURLClassLoader(urls);
-		Thread.currentThread().setContextClassLoader(stubsClassLoader);
+		theClassLoader = new ParentLastURLClassLoader(urls);
 	}
 
 	public <K extends DataClayObject> K newInstance(final String className) {
@@ -105,7 +104,7 @@ public class StubsClassLoader {
 	public <K extends DataClayObject> K newInstance(final String className, Class<?>[] paramTypes, final Object ... initArgs) {
 		K obj = null;
 		try {
-			final Class<?> clazz = stubsClassLoader.loadClass(className);
+			final Class<?> clazz = theClassLoader.loadClass(className);
 			Constructor<?> cons = null;
 			if (paramTypes != null) {
 				cons = clazz.getConstructor(paramTypes);
@@ -124,7 +123,7 @@ public class StubsClassLoader {
 	public <K extends DataClayObject> K getByAlias(final String className, final String alias) {
 		K obj = null;
 		try {
-			final Class<?> clazz = stubsClassLoader.loadClass(className);
+			final Class<?> clazz = theClassLoader.loadClass(className);
 			Method getByAliasMethod = clazz.getMethod("getByAlias", String.class);
 			getByAliasMethod.setAccessible(true);
 			obj = (K) getByAliasMethod.invoke(null, alias);

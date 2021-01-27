@@ -1,12 +1,7 @@
 package steps;
 
-import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.util.structs.Tuple;
-import io.qameta.allure.Allure;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -57,7 +52,8 @@ public class Orchestrator {
 
 		public TestUser(final String testUserName) {
 			this.name = testUserName;
-			this.dockerNetwork = "dataclay-testing-" + testUserName.replace(" ", "_");
+			//this.dockerNetwork = "dataclay-testing-" + testUserName.replace(" ", "_");
+			this.dockerNetwork = "dataclay-testing-network";
 		}
 
 	}
@@ -69,8 +65,9 @@ public class Orchestrator {
 	 *            Command to execute
 	 * @param envVariables
 	 *            Environment variables for the command.
+	 * @return Output
 	 */
-	public static void runProcess(final String command,
+	public static String runProcess(final String command,
 										final Map<String, String> envVariables) {
 		String result = null;
 		try {
@@ -95,7 +92,7 @@ public class Orchestrator {
 			final int exitVal = process.waitFor();
 			errorGobbler.join();
 			outputGobbler.join();
-
+			return outputGobbler.getResult();
 		} catch (final Throwable e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -197,6 +194,18 @@ public class Orchestrator {
 
 
 	/**
+	 * Get IP of logicmodule at user's network provided
+	 * @param userName Name of user
+	 * @return Ip of logicmodule
+	 */
+	public static String getLogicmoduleIPAtUserNetwork(final String userName) {
+		String command = "docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "
+				+ userName + "_logicmodule";
+		System.out.println(command);
+		return runProcess(command, null).replace("'","");
+	}
+
+	/**
 	 * Remove docker network
 	 * @param networkName Name of network
 	 */
@@ -275,24 +284,18 @@ public class Orchestrator {
 		}
 		Tuple<String, String> dockerTags = getDockerImagesToUse();
 		String dockerImage = dockerTags.getSecond();
-
-		// Do not force pull linux/amd64 images to allow local testing
-		String platformParam = "";
-		if (!archImage.equals("linux/amd64")) {
-			platformParam = "--platform " + archImage;
-		}
 		String userID = System.getProperty("userID");
 		String groupID = System.getProperty("groupID");
 
 		String debugFlag = "";
 		if (System.getenv("DEBUG").equals("True")) {
-			debugFlag = "--debug";
+			debugFlag = " --debug";
 		}
 
 		// --user " + userID + ":" + groupID + "
-		String command = "docker run --rm -e HOST_USER_ID=" + userID + " -e HOST_GROUP_ID=" + groupID + " "
-				+ platformParam + " --network=" + dockerNetwork + " " + mountPoints
-				+ " bscdataclay/client:" + dockerImage + " " + dataClayCommand + " " + debugFlag;
+		String command = "docker run --rm -e HOST_USER_ID=" + userID + " -e HOST_GROUP_ID=" + groupID
+				+ " --platform " + archImage + " --network=" + dockerNetwork + " " + mountPoints
+				+ " bscdataclay/client:" + dockerImage + " " + dataClayCommand + debugFlag;
 		System.err.println(command);
 		runProcess(command, null);
 	}
@@ -348,6 +351,10 @@ public class Orchestrator {
 			TEST_USERS.put(testUserName, user);
 		}
 		connectToDockerNetwork(user.dockerNetwork);
+		if (user.stubsFactory != null) {
+			// make sure to use proper class loader
+			Thread.currentThread().setContextClassLoader(user.stubsFactory.stubsClassLoader.theClassLoader);
+		}
 		return user;
 	}
 
