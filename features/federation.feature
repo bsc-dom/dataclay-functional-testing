@@ -1,4 +1,4 @@
-Feature: Dynamicity
+Feature: Federation
 
   Background: dataClay deployment
     Given "UserA" has a configuration file "resources/federation/machine-a/cfgfiles/client.properties" to be used to connect to dataClay
