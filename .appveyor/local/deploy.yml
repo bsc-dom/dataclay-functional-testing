@@ -32,7 +32,7 @@ build_script:
       -w=$APPVEYOR_BUILD_FOLDER \
       --entrypoint=/scripts/entrypoint_deploy.sh \
       bscdataclay/continuous-integration:testing \
-      ./deploy.sh bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile $ENVIRONMENT $PLATFORMS false
+      ./deploy.sh bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile $ENVIRONMENT $PLATFORMS
     EXIT_CODE=$?
     docker logout
     exit $EXIT_CODE

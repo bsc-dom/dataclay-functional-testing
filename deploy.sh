@@ -22,7 +22,7 @@ function deploy {
     esac
   done
   echo "$COMMAND"
-  export n=0
+  n=0
   until [ "$n" -ge 5 ] # Retry maximum 5 times
   do
     echo "************* Pushing image $IMAGE (retry $n) *************"
