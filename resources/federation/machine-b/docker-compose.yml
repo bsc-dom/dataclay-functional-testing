@@ -9,7 +9,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "22034:22034"
-    command: ""
+    command: "--debug"
     environment:
       - LOGICMODULE_PORT_TCP=22034
       - LOGICMODULE_HOST=logicmoduleB
@@ -27,7 +27,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "4127:4127"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleB
     environment:
@@ -46,7 +46,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "7867:7867"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleB
       - dsjavaB
