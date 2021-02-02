@@ -128,7 +128,7 @@ def dataclaycmd(context, client_properties_path, testing_network, command, comma
     debug_flag = ""
     if os.getenv("DEBUG") == "True":
         debug_flag = "--debug"
-    cmd = f"docker run --rm --platform {arch} --network={testing_network} {mount_points} \
+    cmd = f"docker run --platform {arch} --network={testing_network} {mount_points} \
         -e HOST_USER_ID={user_id} -e HOST_GROUP_ID={group_id} \
         bscdataclay/client:{javadockerimg} {command} {debug_flag}"
     print(cmd)
