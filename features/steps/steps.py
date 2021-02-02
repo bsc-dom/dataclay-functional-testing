@@ -278,7 +278,7 @@ def step_impl(context, user_name, docker_compose_path):
     """
     test_user = get_or_create_user(user_name)
     dataclaysrv(context, docker_compose_path, test_user.docker_network, "start")
-    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network, "WaitForDataClayToBeAlive 10 5")
+    dataclaycmd(context, test_user.client_properties_path, test_user.docker_network, "WaitForDataClayToBeAlive 100 5")
     allure.attach.file(docker_compose_path, "docker-compose.yml", attachment_type=allure.attachment_type.TEXT)
 
 

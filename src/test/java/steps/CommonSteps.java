@@ -64,7 +64,7 @@ public class CommonSteps {
 		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
 		Orchestrator.startDataClay(dockerComposePath, testUser.dockerNetwork);
 		Orchestrator.dataClayCMD(testUser.clientPropertiesPath, testUser.dockerNetwork,
-				"WaitForDataClayToBeAlive 10 5");
+				"WaitForDataClayToBeAlive 100 5");
 		Allure.attachment("docker-compose.yml", Utils.readAllBytes(Paths.get(dockerComposePath)));
 	}
 
