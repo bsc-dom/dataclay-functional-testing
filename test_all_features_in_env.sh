@@ -1,9 +1,12 @@
 #!/bin/bash
 if [ "$#" -ne 4 ]; then
-    echo "ERROR: missing parameter. Usage $0 TEST_PATTERN ENVIRONMENT IMAGE ARCH"
+    echo "ERROR: missing parameter. Usage $0 ARCH ENVIRONMENT IMAGE TEST_PATTERN"
     exit 1
 fi
-TEST_PATTERN=$1
+ARCH=$1
+ENVIRONMENT=$2
+IMAGE=$3
+TEST_PATTERN=$4
 TESTS=()
 pushd ./features/
 for f in $TEST_PATTERN.feature; do
@@ -13,9 +16,6 @@ for f in $TEST_PATTERN.feature; do
 done
 popd
 mkdir -p ./allure-results
-ENVIRONMENT=$2
-IMAGE=$3
-ARCH=$4
 EXIT_CODE=0
 echo "Going to test: ${TESTS[@]} "
 for TEST in ${TESTS[@]}; do
