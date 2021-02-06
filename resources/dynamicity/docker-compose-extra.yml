@@ -2,7 +2,7 @@ version: '3.8'
 networks:
   default:
     external:
-      name: "${TESTING_NETWORK}"
+      name: "dataclay-testing-network"
 services:
   dsjava2:
     image: "bscdataclay/dsjava:${JAVACLAY_IMAGE}"

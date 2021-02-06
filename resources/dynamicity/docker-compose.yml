@@ -2,7 +2,7 @@ version: '3.8'
 networks:
   default:
     external:
-      name: "${TESTING_NETWORK}"
+      name: "dataclay-testing-network
 services:
   logicmodule:
     image: "bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
