@@ -51,7 +51,7 @@ build_script:
       -e MN_SECRET=$MN_SECRET \
       -w=$APPVEYOR_BUILD_FOLDER \
       bscdataclay/continuous-integration:testing \
-      ./test_all_features_in_env.sh $TESTING_ARCH $EXEC_ENV $TEST_ENV
+      ./test_features.sh $TESTING_ARCH $EXEC_ENV $TEST_ENV
     EXIT_CODE=$?
     docker logout
     exit $EXIT_CODE
