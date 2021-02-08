@@ -9,7 +9,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "12034:12034"
-    command: ""
+    command: "--debug"
     environment:
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
@@ -27,7 +27,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "3127:3127"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmodule
     environment:
@@ -46,7 +46,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "4127:4127"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmodule
     environment:
@@ -63,7 +63,7 @@ services:
   dspython:
     image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
-    command: ""
+    command: "--debug"
     ports:
       - "6867:6867"
     depends_on:
@@ -82,7 +82,7 @@ services:
   dspython2:
     image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
-    command: ""
+    command: "--debug"
     ports:
       - "7867:7867"
     depends_on:

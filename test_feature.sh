@@ -54,8 +54,8 @@ function docker_pull {
 
 function prepare_docker {
   printf "Preparing multiarch... "
-  docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64 >/dev/null
-  #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes >/dev/null
+  #docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64 >/dev/null
+  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes >/dev/null
 }
 
 function prepare_images {
