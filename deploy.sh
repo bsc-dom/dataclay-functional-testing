@@ -61,7 +61,8 @@ if [[ $RESULT == *"dataclay-builderx"* ]]; then
 else
   echo "Creating builder $BUILDERX_NAME"
   docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
-  docker buildx create --name dataclay-builderx
+  #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes >/dev/null
+  docker buildx create --driver-opt network=host --name dataclay-builderx
   docker buildx use dataclay-builderx
   docker buildx inspect --bootstrap
 fi
