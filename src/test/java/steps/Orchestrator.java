@@ -293,7 +293,7 @@ public class Orchestrator {
 		}
 
 		// --user " + userID + ":" + groupID + "
-		String command = "docker run -e HOST_USER_ID=" + userID + " -e HOST_GROUP_ID=" + groupID
+		String command = "docker run --rm -e HOST_USER_ID=" + userID + " -e HOST_GROUP_ID=" + groupID
 				+ " --platform " + archImage + " --network=" + dockerNetwork + " " + mountPoints
 				+ " bscdataclay/client:" + dockerImage + " " + dataClayCommand + debugFlag;
 		System.err.println(command);

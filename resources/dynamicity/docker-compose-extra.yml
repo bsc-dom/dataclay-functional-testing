@@ -9,7 +9,7 @@ services:
     platform: ${IMAGE_PLATFORM}
     ports:
       - "4127:4127"
-    command: "--debug"
+    command: ""
     environment:
       - DATASERVICE_NAME=DS2
       - DATASERVICE_JAVA_PORT_TCP=4127
@@ -24,7 +24,7 @@ services:
   dspython2:
     image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
-    command: "--debug"
+    command: ""
     ports:
       - "7867:7867"
     environment:
