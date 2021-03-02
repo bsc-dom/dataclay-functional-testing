@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$#" -ne 4 ]; then
+if [ "$#" -lt 4 ]; then
     echo "ERROR: missing parameter. Usage  $0 TESTNAME ENVIRONMENT ARCH IMAGE"
     exit 1
 fi
@@ -9,6 +9,13 @@ ENVIRONMENT=$2
 ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
 ARCH=$3
 IMAGE=$4
+SPECIFIC_OPTIONS=""
+if [ "$#" -gt 4 ]; then
+  all_args=("$@")
+  rest_args=("${all_args[@]:4}")
+  echo "-- specific options = $rest_args"
+  SPECIFIC_OPTIONS="$rest_args"
+fi
 if  [ "$IMAGE" = "alpine" ] && [ "$ENVIRONMENT" = "jdk8" ]; then
     echo "WARNING: IMAGE alpine and ENVIRONMENT jdk8 not supported! Skipping"
     exit 0
@@ -38,15 +45,15 @@ if [[ $ENVIRONMENT == jdk* ]]; then
   java -cp $DATACLAY_JAR:target/functional-testing-1.0.0-SNAPSHOT-jar-with-dependencies.jar:target/functional-testing-1.0.0-SNAPSHOT-tests.jar \
     -Djdk="$ENVIRONMENT_VERSION" -Dimage="$IMAGE" -Darch="$ARCH" -Dhost_pwd="$HOST_PWD" -Dtest_network="dataclay-testing-network" \
     -DuserID="$HOST_USER_ID" -DgroupID="$HOST_GROUP_ID" $DEBUG_FLAG \
-    -Dcucumber.options="features/$TESTNAME.feature" \
+    $SPECIFIC_OPTIONS -Dcucumber.options="features/$TESTNAME" \
     org.junit.runner.JUnitCore steps.RunCucumberTest
   EXIT_CODE=$?
 elif [[ $ENVIRONMENT == py* ]]; then
   python3 -u -m behave -D pyver="$ENVIRONMENT_VERSION" -D image="$IMAGE" -D arch="$ARCH" -D host_pwd="$HOST_PWD" -D test_network="dataclay-testing-network"\
-			  -D userID="$HOST_USER_ID" -D groupID="$HOST_GROUP_ID" \
-			  --no-capture-stderr --no-capture --no-logcapture \
-			  -f allure_behave.formatter:AllureFormatter -f pretty -o ./allure-results \
-			   --include features/${TESTNAME}.feature
+          -D userID="$HOST_USER_ID" -D groupID="$HOST_GROUP_ID" \
+          --no-capture-stderr --no-capture --no-logcapture \
+          -f allure_behave.formatter:AllureFormatter -f pretty -o ./allure-results \
+          $SPECIFIC_OPTIONS --include features/${TESTNAME}
   EXIT_CODE=$?
 fi
 

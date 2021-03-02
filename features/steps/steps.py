@@ -2,7 +2,7 @@ import os
 from behave import *
 import allure
 import sys
-
+import importlib
 
 class TestUser:
     """Test user"""
@@ -199,9 +199,16 @@ def clean_scenario(context):
         :param scenario: the current feature scenario
         :type scenario: scenario
     """
+    from dataclay.api import finish
+    finish()
     cmd = "/bin/bash resources/utils/clean_scenario.sh"
     print(cmd)
     os.system(cmd)
+    ALL_TEST_USERS.clear()
+    # reload dataclay object type (mclass wrappers)
+    #from importlib import reload
+    #import dataclay
+    #reload(dataclay)
 
 
 def create_docker_network(network_name):
@@ -419,6 +426,8 @@ def step_impl(context, user_name, num_nodes, language):
 
 
 @given('"{user_name}" starts a new session')
+@when('"{user_name}" starts a new session')
+@then('"{user_name}" starts a new session')
 def step_impl(context, user_name):
     """ Start a new session
         :param context: the current feature context
@@ -427,12 +436,14 @@ def step_impl(context, user_name):
         :type user_name: string
     """
     test_user = get_or_create_user(user_name)
+    os.environ["DATACLAYCLIENTCONFIG"] = test_user.client_properties_path
     os.environ["DATACLAYSESSIONCONFIG"] = test_user.session_properties_path
     from dataclay.api import init
     init()
 
 @given('"{user_name}" finishes the session')
 @then('"{user_name}" finishes the session')
+@when('"{user_name}" finishes the session')
 def step_impl(context, user_name):
     """ Finish a session
         :param context: the current feature context
@@ -442,3 +453,10 @@ def step_impl(context, user_name):
     """
     from dataclay.api import finish
     finish()
+
+@given('"{user_name}" stops "{docker_services}" docker services deployed using "{docker_compose_path}"')
+@then('"{user_name}" stops "{docker_services}" docker services deployed using "{docker_compose_path}"')
+@when('"{user_name}" stops "{docker_services}" docker services deployed using "{docker_compose_path}"')
+def step_impl(context, user_name, docker_services, docker_compose_path):
+    test_user = get_or_create_user(user_name)
+    dockercompose(context, docker_compose_path, test_user.docker_network, f"stop {docker_services}")

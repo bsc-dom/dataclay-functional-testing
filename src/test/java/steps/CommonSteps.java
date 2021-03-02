@@ -1,8 +1,10 @@
 package steps;
 
+import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.api.BackendID;
 import es.bsc.dataclay.api.DataClay;
 import es.bsc.dataclay.api.DataClayException;
+import es.bsc.dataclay.util.ids.ExecutionEnvironmentID;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
@@ -165,5 +167,11 @@ public class CommonSteps {
 		DataClay.finish();
 	}
 
+    @And("{string} stops {string} docker services deployed using {string}")
+    public void stopsDockerService(String userName, String serviceNames, final String dockerComposePath) {
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+		Orchestrator.dockerComposeCommand(dockerComposePath, testUser.dockerNetwork,"stop " + serviceNames);
+
+	}
 }
 

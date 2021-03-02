@@ -1,6 +1,7 @@
 package steps;
 
 import es.bsc.dataclay.api.BackendID;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -9,24 +10,28 @@ import model.Person_Stub;
 
 import java.util.Set;
 
+import static org.junit.Assert.assertTrue;
+
 public class GetByAliasSteps {
 
-	@Then("{string} runs make persistent for an object with alias {string}")
-	public void runsMakePersistentForAnObjectWithAlias(String userName, String alias) {
-		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		String pName = "Bob";
-		int pAge = 33;
-		Person_Stub p = user.stubsFactory.newPerson(pName, pAge);
-		p.makePersistent(alias);
-		user.userObjects.put("person", p);
-	}
 
-	@Then("{string} gets the object with alias {string}")
-	public void getsTheObjectWithAlias(String userName, String alias) {
-		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
+    @Then("{string} creates {string} of class {string} using alias {string}")
+    public void createsObjectOfClassUsingAlias(String userName, String objectName,
+											   String className, String alias) {
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+		testUser.userObjects.put(objectName,
+				testUser.stubsFactory.getByAlias(className, alias));
+    }
 
-		Person_Stub p = user.stubsFactory.getByAlias(alias);
-		System.out.println(p);
-	}
-
+    @And("{string} checks that there is no object of class {string} with alias {string}")
+    public void checksThatThereIsNoObjectOfClassWithAlias(String userName, String className, String alias) {
+        Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+        boolean exceptionRaised = false;
+        try {
+            testUser.stubsFactory.getByAlias(className, alias);
+        } catch (Exception e) {
+            exceptionRaised = true;
+        }
+        assertTrue(exceptionRaised);
+    }
 }

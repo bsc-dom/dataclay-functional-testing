@@ -1,5 +1,6 @@
 package steps;
 
+import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.util.structs.Tuple;
 
 import java.util.*;
@@ -10,6 +11,11 @@ import java.util.*;
  */
 public class Orchestrator {
 
+	/** Current user context. */
+	public static TestUser userContext;
+
+	/** Original class loader. */
+	public static ClassLoader ORIGINAL_CLASS_LOADER = null;
 
 	/** dataClay server command to start dataClay docker instances. */
 	private static final String DATACLAYSRV_START_COMMAND = "start";
@@ -21,7 +27,7 @@ public class Orchestrator {
 	private static final String DATACLAYSRV_KILL_COMMAND = "kill";
 
 	/** All test users. */
-	public static Map<String, TestUser> TEST_USERS = new HashMap<>();
+	public static Map<String, TestUser> TEST_USERS = null;
 
 	/** Test user. **/
 	public static class TestUser {
@@ -150,6 +156,10 @@ public class Orchestrator {
 		String command = "/bin/bash resources/utils/clean_scenario.sh";
 		System.out.println(command);
 		runProcess(command, null);
+		TEST_USERS = null;
+		if (ORIGINAL_CLASS_LOADER != null) {
+			Thread.currentThread().setContextClassLoader(ORIGINAL_CLASS_LOADER);
+		}
 	}
 
 	/**
@@ -344,8 +354,14 @@ public class Orchestrator {
 	 * @return Test user
 	 */
 	public static TestUser getOrCreateTestUser(final String testUserName) {
+		if (TEST_USERS == null) {
+			System.err.println("---> Creating test users map ");
+			TEST_USERS = new HashMap<>();
+			ORIGINAL_CLASS_LOADER = Thread.currentThread().getContextClassLoader();
+		}
 		TestUser user = TEST_USERS.get(testUserName);
 		if (user == null) {
+			System.err.println("---> Creating user " + testUserName);
 			user = new TestUser(testUserName);
 			createDockerNetwork(user.dockerNetwork);
 			TEST_USERS.put(testUserName, user);
@@ -353,8 +369,12 @@ public class Orchestrator {
 		connectToDockerNetwork(user.dockerNetwork);
 		if (user.stubsFactory != null) {
 			// make sure to use proper class loader
+			System.err.println("---> Setting classLoader " + user.stubsFactory.stubsClassLoader.theClassLoader);
+			System.err.println("---> Setting classLoader with path: " + user.stubsFactory.stubsPath);
+
 			Thread.currentThread().setContextClassLoader(user.stubsFactory.stubsClassLoader.theClassLoader);
 		}
+		userContext = user;
 		return user;
 	}
 

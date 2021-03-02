@@ -16,3 +16,5 @@ for network in $DATACLAY_TESTING_NETWORKS; do
   docker network rm $network
 done
 rm -rf /testing/stubs/*
+rm -rf /testing/dbfiles/*
+rm -rf stubs/*

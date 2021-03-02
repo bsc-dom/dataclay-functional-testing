@@ -15,10 +15,25 @@ Feature: New version and Consolidate
       
   Scenario: create new version and consolidate
     Given "UserA" starts a new session
-      And "UserA" runs make persistent for an object
-     When "UserA" creates new version of the object in backend "DS2"
-      And "UserA" updates the version object
-      And "UserA" checks that the original object was not modified
-     Then "UserA" consolidates the version
-      And "UserA" checks that the original object was modified
+      And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
+      And "UserA" runs make persistent for object "obj_person"
+     When "UserA" creates "obj_version_person" object as a version of "obj_person" object
+      And "UserA" runs "setName" method with params "BobVersion" in object "obj_version_person"
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "Bob"
+     Then "UserA" consolidates "obj_version_person" version object
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "BobVersion"
+      And "UserA" finishes the session
+
+  Scenario: create version of version and consolidate
+    Given "UserA" starts a new session
+      And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
+      And "UserA" runs make persistent for object "obj_person"
+     When "UserA" creates "obj_version_person" object as a version of "obj_person" object
+      And "UserA" runs "setName" method with params "BobVersion" in object "obj_version_person"
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "Bob"
+      And "UserA" creates "obj_version_person2" object as a version of "obj_version_person" object
+      And "UserA" runs "setName" method with params "BobVersion2" in object "obj_version_person2"
+      And "UserA" runs "getName" method in object "obj_version_person" and checks that result is "BobVersion"
+     Then "UserA" consolidates "obj_version_person2" version object
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "BobVersion2"
       And "UserA" finishes the session

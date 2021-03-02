@@ -21,7 +21,7 @@ function test_feature {
     -v $PWD/features:/testing/features:ro \
     -v $PWD/allure-results:/testing/allure-results:rw \
     -v $PWD/stubs:/testing/stubs:rw \
-    bscdataclay/continuous-integration:testing-$ENVIRONMENT $TESTNAME $ENVIRONMENT $ARCH $IMAGE"
+    bscdataclay/continuous-integration:testing-$ENVIRONMENT $TESTNAME $ENVIRONMENT $ARCH $IMAGE \"$SPECIFIC_OPTIONS\""
   echo $COMMAND
   eval $COMMAND
   return $?
@@ -88,11 +88,12 @@ function clean {
 echo "WARNING: If you are running tests in local, do NOT run them in parallel, shared volumes could end up into inconsistent status,
 use test_all scripts instead or docker containers"
 if [ "$#" -lt 4 ]; then
-    echo "ERROR: missing parameter. Usage $0 TESTNAME ENVIRONMENT ARCH IMAGE DEBUG where:"
+    echo "ERROR: missing parameter. Usage $0 TESTNAME ENVIRONMENT ARCH IMAGE DEBUG SPECIFIC_OPTIONS where:"
     echo " ARCH = (linux/amd64, linux/arm/v7, linux/arm64)"
     echo " IMAGE = (normal, slim, alpine)"
     echo " ENVIRONMENT = (jdk8, jdk11, py36, py37, py38)"
     echo " DEBUG = (True, False)"
+    echo " SPECIFIC_OPTIONS = <cucumber specific options>"
     exit 1
 fi
 mkdir -p allure-results
@@ -101,10 +102,19 @@ TESTNAME=$1
 ENVIRONMENT=$2
 ARCH=$3
 IMAGE=$4
+SPECIFIC_OPTIONS=""
 DEBUG=False
 if [ "$#" -gt 4 ]; then
   DEBUG=$5
 fi
+if [ "$#" -gt 5 ]; then
+  all_args=("$@")
+  rest_args=("${all_args[@]:5}")
+  echo "-- all args = ${all_args[@]}"
+  echo "-- specific options = $rest_args"
+  SPECIFIC_OPTIONS=$rest_args
+fi
+
 prepare_docker
 prepare_images
 clean

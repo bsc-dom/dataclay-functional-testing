@@ -1,83 +1,20 @@
 from steps.steps import *
 
-@when('"{user_name}" creates new version of the object in backend "{backend_name}"')
-def step_impl(context, user_name, backend_name):
-    """
-    Call new replica
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    :param backend_name: name of backend in which to create version
-    :type backend_name: str
-    """
-    from dataclay import api
+@given('"{user_name}" creates "{obj_version_ref}" object as a version of "{obj_ref}" object')
+@when('"{user_name}" creates "{obj_version_ref}" object as a version of "{obj_ref}" object')
+@then('"{user_name}" creates "{obj_version_ref}" object as a version of "{obj_ref}" object')
+def step_impl(context, user_name, obj_version_ref, obj_ref):
+    from storage import api
     test_user = get_or_create_user(user_name)
-    person = test_user.user_objects["person"]
-    backend_id = api.get_backend_id_by_name(backend_name)
-    version_info =person.new_version(backend_id)
-    # FIXME: update this ugly way to get versioned object
-    versioned_obj_id = version_info[0].versionOID
-    versioned_person = api.getRuntime().get_object_by_id(versioned_obj_id,
-                                                                 person.get_class_extradata().class_id,
-                                                                 backend_id)
-    test_user.user_objects["versioned_person"] = versioned_person
-    test_user.user_objects["version_info"] = version_info
+    obj = test_user.user_objects[obj_ref]
+    version_id, dest_backend_id = obj.new_version()
+    version_obj = api.getByID(f"{version_id}:{dest_backend_id}:{obj.get_class_id()}")
+    test_user.user_objects[obj_version_ref] = version_obj
 
-@when('"{user_name}" updates the version object')
-def step_impl(context, user_name):
-    """
-    Get object locations and check
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    """
+@given('"{user_name}" consolidates "{obj_version_ref}" version object')
+@when('"{user_name}" consolidates "{obj_version_ref}" version object')
+@then('"{user_name}" consolidates "{obj_version_ref}" version object')
+def step_impl(context, user_name, obj_version_ref):
     test_user = get_or_create_user(user_name)
-    versioned_person = test_user.user_objects["versioned_person"]
-    versioned_person.age = 100
-
-
-@when('"{user_name}" checks that the original object was not modified')
-def step_impl(context, user_name):
-    """
-    Get object locations and check
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    """
-    test_user = get_or_create_user(user_name)
-    versioned_person = test_user.user_objects["versioned_person"]
-    person = test_user.user_objects["person"]
-    assert person.age == 33
-    assert versioned_person.age == 100
-
-
-@then('"{user_name}" consolidates the version')
-def step_impl(context, user_name):
-    """
-    Get object locations and check
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    """
-    test_user = get_or_create_user(user_name)
-    versioned_person = test_user.user_objects["versioned_person"]
-    version_info = test_user.user_objects["version_info"]
-    versioned_person.consolidate_version(version_info[1])
-
-
-@then('"{user_name}" checks that the original object was modified')
-def step_impl(context, user_name):
-    """
-    Get object locations and check
-    :param context: the current feature context
-    :type context: context
-    :param user_name: user name
-    :type user_name: string
-    """
-    test_user = get_or_create_user(user_name)
-    person = test_user.user_objects["person"]
-    assert person.age == 100
+    version_obj = test_user.user_objects[obj_version_ref]
+    version_obj.consolidate_version()

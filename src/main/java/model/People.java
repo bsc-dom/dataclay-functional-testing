@@ -24,4 +24,9 @@ public class People extends DataClayObject implements People_Stub {
 	public void add(Person_Stub newPerson) {
 		people.add(newPerson);
 	}
+
+	@Override
+	public Person_Stub get(int idx) {
+		return this.people.get(idx);
+	}
 }

@@ -15,6 +15,9 @@ Feature: Get by alias
 
   Scenario: run simple get by alias
     Given "UserA" starts a new session
-      And "UserA" runs make persistent for an object with alias "myobj"
-     Then "UserA" gets the object with alias "myobj"
+      And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
+      And "UserA" runs make persistent for object "obj_person" with alias = "myobj"
+     Then "UserA" creates "obj_personFromAlias" of class "Person" using alias "myobj"
+      And "UserA" runs "getName" method in object "obj_personFromAlias" and checks that result is "Bob"
+      And "UserA" runs "getAge" method in object "obj_personFromAlias" and checks that result is "33"
       And "UserA" finishes the session

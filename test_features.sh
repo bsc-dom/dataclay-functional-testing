@@ -19,7 +19,7 @@ mkdir -p ./allure-results
 EXIT_CODE=0
 echo "Going to test: ${TESTS[@]} "
 for TEST in ${TESTS[@]}; do
-    ./test_feature.sh $TEST $ENVIRONMENT $ARCH $IMAGE
+    ./test_feature.sh ${TEST}.feature $ENVIRONMENT $ARCH $IMAGE
     RESULT=$?
     if [ $RESULT -ne 0 ]; then
         EXIT_CODE=$RESULT

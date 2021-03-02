@@ -16,10 +16,20 @@ Feature: Make persistent
 
   Scenario: run a simple make persistent
     Given "UserA" starts a new session
-     Then "UserA" runs make persistent for an object
+     Then "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
+      And "UserA" runs make persistent for object "obj_person"
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "Bob"
+      And "UserA" runs "getAge" method in object "obj_person" and checks that result is "33"
       And "UserA" finishes the session
 
-      
+  Scenario: run make persistent into backend
+    Given "UserA" starts a new session
+     Then "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
+      And "UserA" runs make persistent for object "obj_person"
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "Bob"
+      And "UserA" runs "getAge" method in object "obj_person" and checks that result is "33"
+      And "UserA" finishes the session
+
   #Scenario: run a LOCAL make persistent
   #  Given I start a new session
   #   Then I run a LOCAL make persistent for an object 

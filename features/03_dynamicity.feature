@@ -17,9 +17,15 @@ Feature: Dynamicity
     Given "UserA" starts extra nodes using "resources/dynamicity/docker-compose-extra.yml"
       And "UserA" waits until dataClay has 2 backends of "java" language
       And "UserA" starts a new session
-      And "UserA" runs make persistent for an object
-      And "UserA" sets object to be read only
-     When "UserA" calls new replica
-     Then "UserA" gets object locations and sees object is located in two locations
+      And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
+      And "UserA" runs make persistent for object "obj_person" with backend name = "DS1"
+      And "UserA" runs "getName" method in object "obj_person" and checks that result is "Bob"
+      And "UserA" runs "getAge" method in object "obj_person" and checks that result is "33"
+      And "UserA" sets "obj_person" object to be read only
+     When "UserA" calls new replica for object "obj_person"
+     Then "UserA" gets id of "DS1" backend into "execid_DS2" variable
+      And "UserA" calls get all locations for object "obj_person" and check object is located in 2 locations
+      And "UserA" calls get all locations for object "obj_person" and check object is located in "execid_DS2" location
+      And "UserA" finishes the session
       And "UserA" finishes the session
    

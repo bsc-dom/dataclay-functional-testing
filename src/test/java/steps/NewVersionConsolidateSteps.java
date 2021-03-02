@@ -1,5 +1,6 @@
 package steps;
 
+import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.api.Backend;
 import es.bsc.dataclay.api.BackendID;
 import es.bsc.dataclay.api.DataClay;
@@ -33,65 +34,31 @@ import java.util.Set;
 
 public class NewVersionConsolidateSteps {
 
-
-	@When("{string} creates new version of the object in backend {string}")
-	public void createsNewVersionOfTheObjectInBackend(final String userName, String backendName) throws StorageException {
+    @When("{string} creates {string} object in host {string} as a version of {string} object")
+    public void createsObjectInBackendAsAVersionOfObject(String userName, String objectName, String hostName,
+														 String refObjectName) throws StorageException {
 		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		Person_Stub person = (Person_Stub) user.userObjects.get("person");
+		DataClayObject obj = (DataClayObject) user.userObjects.get(refObjectName);
 
-		String backend2Hostname = null;
-		for (ExecutionEnvironment b : DataClay.getCommonLib().getExecutionEnvironmentsInfo(CommonMessages.Langs.LANG_JAVA).values()) {
-			if (b.getName().equals(backendName)) {
-				backend2Hostname = b.getHostname();
-				break;
-			}
+		String theHostName = null;
+		if (!hostName.equals("null")) {
+			theHostName = hostName;
 		}
-		org.junit.Assert.assertNotNull(backend2Hostname);
-		System.out.println("Backend hostname : " + backend2Hostname);
-		System.out.println("BACKENDS: " + DataClay.getBackends().values());
-		String id = person.getObjectID()
-				+ ":" + person.getHint()
-				+ ":" + person.getMetaClassID();
-		System.out.println("Object id " + id);
-
-		String newObjectID = StorageItf.newVersion(id, false, backend2Hostname);
-		// get versioned object
-		Person_Stub personVersion = (Person_Stub) StorageItf.getByID(newObjectID);
-		user.userObjects.put("personVersion", personVersion);
-
+		String newObjectID = StorageItf.newVersion(obj.getID(), false, theHostName);
+		Object versionObj = StorageItf.getByID(newObjectID);
+		user.userObjects.put(objectName, versionObj);
 	}
 
-
-	@And("{string} updates the version object")
-	public void updatesTheVersionObject(final String userName) {
+	@Then("{string} consolidates {string} version object")
+	public void consolidatesVersionObject(String userName, String objectName) throws StorageException {
 		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
-		personVersion.setAge(100);
-	}
-	@Then("{string} checks that the original object was not modified")
-	public void checksThatTheOriginalObjectWasNotModified(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		Person_Stub person = (Person_Stub) user.userObjects.get("person");
-		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
-		org.junit.Assert.assertEquals(33, person.getAge());
-		org.junit.Assert.assertEquals(100, personVersion.getAge());
-
+		DataClayObject obj = (DataClayObject) user.userObjects.get(objectName);
+		StorageItf.consolidateVersion(obj.getID());
 	}
 
-	@Then("{string} consolidates the version")
-	public void consolidatesTheVersion(final String userName) throws StorageException {
-		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		Person_Stub personVersion = (Person_Stub) user.userObjects.get("personVersion");
-		String id = personVersion.getObjectID()
-				+ ":" + personVersion.getMetaClassID()
-				+ ":" + personVersion.getHint();
-		StorageItf.consolidateVersion(id);
-	}
-
-	@And("{string} checks that the original object was modified")
-	public void checksThatTheOriginalObjectWasModified(final String userName) {
-		Orchestrator.TestUser user = Orchestrator.getOrCreateTestUser(userName);
-		Person_Stub person = (Person_Stub) user.userObjects.get("person");
-		org.junit.Assert.assertEquals(100, person.getAge());
+	@When("{string} creates {string} object as a version of {string} object")
+	public void createsAsAVersionOfObject(String userName, String objectName,
+										  String refObjectName) throws StorageException {
+    	this.createsObjectInBackendAsAVersionOfObject(userName, objectName, "null", refObjectName);
 	}
 }

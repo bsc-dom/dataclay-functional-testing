@@ -13,7 +13,7 @@ function build {
   DOCKER_FILE=$2
   ENVIRONMENT=$3
   BUILD_ARCH=$4
-  PREFIX=$(sed -e 's/[0-9]*$//' <<< "$ENVIRONMENT")
+  PREFIX=$(sed -e 's/[0-9]*\.*//g' <<< "$ENVIRONMENT")
   ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
   if [ "$PREFIX" == "jdk" ]; then
       CONTAINER_ID=$(docker create --platform $BUILD_ARCH bscdataclay/dsjava:develop-slim)
@@ -108,7 +108,7 @@ do
           printMsg "Specified environments for testing images to build:"
           for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
             printMsg " -- $ENVIRONMENT"
-            PREFIX=$(sed -e 's/[0-9]*$//' <<< "$ENVIRONMENT")
+            PREFIX=$(sed -e 's/[0-9]*\.*//g' <<< "$ENVIRONMENT")
             ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
             if [ "$PREFIX" == "jdk" ]; then
               SUPPORTED_JAVA_VERSIONS="$SUPPORTED_JAVA_VERSIONS $ENVIRONMENT_VERSION"
@@ -129,12 +129,17 @@ do
     shift
 done
 
+
 # create platform files
 if [ -z $SUPPORTED_PYTHON_VERSIONS ]; then
   SUPPORTED_PYTHON_VERSIONS="3.6 3.7 3.8"
+else
+  printMsg "Specified python versions: $SUPPORTED_PYTHON_VERSIONS"
 fi
 if [ -z $SUPPORTED_JAVA_VERSIONS ]; then
   SUPPORTED_JAVA_VERSIONS="8 11"
+else
+  printMsg "Specified java versions: $SUPPORTED_JAVA_VERSIONS"
 fi
 if [[ "$SUPPORTED_JAVA_VERSIONS" != *$DEFAULT_JAVA* ]]; then
   DEFAULT_JAVA=$(echo $SUPPORTED_JAVA_VERSIONS | cut -d' ' -f1)
@@ -152,7 +157,10 @@ if [[ "$SUPPORTED_PYTHON_VERSIONS" != *$DEFAULT_PYTHON* ]]; then
   DEFAULT_PYTHON=$(echo $SUPPORTED_PYTHON_VERSIONS | cut -d' ' -f1)
   printWarn "DEFAULT_PYTHON not supported in current configuration: using first supported $DEFAULT_PYTHON"
 fi
-
+if [[ "$SUPPORTED_PYTHON_VERSIONS" != *$CLIENT_PYTHON* ]]; then
+  CLIENT_PYTHON=$(echo $SUPPORTED_PYTHON_VERSIONS | cut -d' ' -f1)
+  printWarn "CLIENT_PYTHON not supported in current configuration: using first supported $CLIENT_PYTHON "
+fi
 tmpfile=$(mktemp /tmp/functional-testing-platforms.XXXXXX)
 echo "SUPPORTED_JAVA_VERSIONS=($SUPPORTED_JAVA_VERSIONS)
 SUPPORTED_PYTHON_VERSIONS=($SUPPORTED_PYTHON_VERSIONS)
@@ -177,6 +185,7 @@ fi
 if [ "$BUILD_BASE" == "true" ]; then
   printMsg " ==> Building base test images"
   for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
+    ENVIRONMENT=$(sed -e 's/\.*//g' <<< "$ENVIRONMENT")
     build bscdataclay/continuous-integration:testing-$ENVIRONMENT-base base.Dockerfile $ENVIRONMENT $ARCH
   done
 fi
@@ -189,6 +198,7 @@ docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
 docker rm $JAVACLAY_CONTAINER
 
 for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
+  ENVIRONMENT=$(sed -e 's/\.*//g' <<< "$ENVIRONMENT")
   build bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile $ENVIRONMENT $ARCH
 done
 
