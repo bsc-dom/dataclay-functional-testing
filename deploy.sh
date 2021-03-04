@@ -65,6 +65,13 @@ else
   docker buildx create --driver-opt network=host --name dataclay-builderx
   docker buildx use dataclay-builderx
   docker buildx inspect --bootstrap
+  if [ -f "/usr/local/share/ca-certificates/dom-ci.bsc.es.crt" ]; then
+    echo "Copying certificate /usr/local/share/ca-certificates/dom-ci.bsc.es.crt to docker buildx"
+    BUILDER=$(docker ps | grep buildkitd | cut -f1 -d' ')
+    docker cp /usr/local/share/ca-certificates/dom-ci.bsc.es.crt $BUILDER:/usr/local/share/ca-certificates/
+    docker exec $BUILDER update-ca-certificates
+    docker restart $BUILDER
+  fi
 fi
 
 if [ "$PREFIX" == "jdk" ]; then

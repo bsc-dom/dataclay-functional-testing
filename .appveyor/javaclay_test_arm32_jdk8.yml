@@ -1,4 +1,5 @@
 version: 2.6.dev.build{build}
+build_cloud: bsccsdomci01
 branches:
   only:
     - develop

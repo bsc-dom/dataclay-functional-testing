@@ -13,6 +13,7 @@ function build {
   DOCKER_FILE=$2
   ENVIRONMENT=$3
   BUILD_ARCH=$4
+  DEFAULT_ARCH=$5
   PREFIX=$(sed -e 's/[0-9]*\.*//g' <<< "$ENVIRONMENT")
   ENVIRONMENT_VERSION=$(grep -o '[0-9].*' <<< "$ENVIRONMENT")
   if [ "$PREFIX" == "jdk" ]; then
@@ -40,22 +41,22 @@ function build {
       docker buildx inspect --bootstrap
     fi
     if [ "$PREFIX" == "py" ]; then
-      docker tag bscdataclay/dspython:develop.${ENVIRONMENT}-slim localhost:5000/bscdataclay/dspython:develop.${ENVIRONMENT}-slim
-      docker push localhost:5000/bscdataclay/dspython:develop.${ENVIRONMENT}-slim
+      docker tag bscdataclay/dspython:develop.${ENVIRONMENT}-slim dom-ci.bsc.es/bscdataclay/dspython:develop.${ENVIRONMENT}-slim
+      docker push dom-ci.bsc.es/bscdataclay/dspython:develop.${ENVIRONMENT}-slim
     fi
 
-    COMMAND="docker buildx build -f $PREFIX.$DOCKER_FILE -t localhost:5000/$IMAGE_NAME \
+    COMMAND="docker buildx build -f $PREFIX.$DOCKER_FILE -t dom-ci.bsc.es/$IMAGE_NAME \
                --platform $BUILD_ARCH \
-               --build-arg REGISTRY=localhost:5000/ \
+               --build-arg REGISTRY=dom-ci.bsc.es/ \
                --build-arg ENVIRONMENT=$ENVIRONMENT \
                --build-arg ENVIRONMENT_VERSION=$ENVIRONMENT_VERSION \
                --push ."
-    printMsg "************* Building image localhost:5000/$IMAGE_NAME (retry $n) *************"
+    printMsg "************* Building image dom-ci.bsc.es/$IMAGE_NAME (retry $n) *************"
     printMsg "$COMMAND"
     eval "$COMMAND"
-    printMsg "************* localhost:5000/$IMAGE_NAME IMAGE BUILD! (in $n retries) *************"
-    docker pull --platform $BUILD_ARCH localhost:5000/$IMAGE_NAME
-    docker tag localhost:5000/$IMAGE_NAME $IMAGE_NAME
+    printMsg "************* dom-ci.bsc.es/$IMAGE_NAME IMAGE BUILD! (in $n retries) *************"
+    docker pull --platform $DEFAULT_ARCH dom-ci.bsc.es/$IMAGE_NAME
+    docker tag dom-ci.bsc.es/$IMAGE_NAME $IMAGE_NAME
   fi
 }
 
@@ -69,6 +70,7 @@ DATACLAY_PACKAGING_PATH=$1
 BUILD_BASE="true"
 BUILD_DATACLAY="true"
 ARCH="linux/amd64"
+DEFAULT_ARCH="linux/amd64"
 shift
 source ./BUILD_MATRIX.txt
 DEFAULT_JAVA=8
@@ -85,6 +87,11 @@ do
         --skip-base)
           BUILD_BASE="false"
           printMsg "Skipping base test images"
+          ;;
+        --default-arch)
+          shift
+          DEFAULT_ARCH="$1"
+          printMsg "Default arch = $DEFAULT_ARCH"
           ;;
         --images)
           shift
@@ -177,7 +184,7 @@ if [ "$BUILD_DATACLAY" == "true" ]; then
   printMsg "==> Building dataClay "
   pushd $DATACLAY_PACKAGING_PATH/docker
   for IMAGE in ${IMAGES[@]}; do
-      ./build.sh --dev -y --$IMAGE --plaforms-file $tmpfile --build-platform $ARCH
+      ./build.sh --dev -y --$IMAGE --plaforms-file $tmpfile --build-platform $ARCH --default-build-platform $DEFAULT_ARCH
   done
   popd
 fi
@@ -186,7 +193,7 @@ if [ "$BUILD_BASE" == "true" ]; then
   printMsg " ==> Building base test images"
   for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
     ENVIRONMENT=$(sed -e 's/\.*//g' <<< "$ENVIRONMENT")
-    build bscdataclay/continuous-integration:testing-$ENVIRONMENT-base base.Dockerfile $ENVIRONMENT $ARCH
+    build bscdataclay/continuous-integration:testing-$ENVIRONMENT-base base.Dockerfile $ENVIRONMENT $ARCH $DEFAULT_ARCH
   done
 fi
 
@@ -199,7 +206,7 @@ docker rm $JAVACLAY_CONTAINER
 
 for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
   ENVIRONMENT=$(sed -e 's/\.*//g' <<< "$ENVIRONMENT")
-  build bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile $ENVIRONMENT $ARCH
+  build bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile $ENVIRONMENT $ARCH $DEFAULT_ARCH
 done
 
 rm $tmpfile
