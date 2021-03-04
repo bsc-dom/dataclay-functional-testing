@@ -1,11 +1,11 @@
 version: 2.6.dev.build{build}
 build_cloud: bsccsdomci01
+image: Linux
 branches:
   only:
     - develop
 skip_tags: true
 skip_branch_with_pr: true
-image: Ubuntu1804
 max_jobs: 1
 environment:
   MN_SALT:
