@@ -1,6 +1,5 @@
 version: 2.6.dev.build{build}
 build_cloud: bsccsdomci01
-image: Linux
 branches:
   only:
     - develop
@@ -33,12 +32,6 @@ environment:
     # Group 4
     - TEST_ENV: normal 04_*
     - TEST_ENV: slim 04_*
-install:
-  - |
-    sudo apt-get update
-    sudo apt-get install -y binfmt-support qemu qemu-user-static jq
-    echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
-    sudo service docker restart
 build_script:
   - |
     curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
