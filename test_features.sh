@@ -191,8 +191,8 @@ printWarn "Image types to test: $IMAGES_TYPES_STR"
 mkdir -p allure-results
 SECONDS=0
 
-for ENVIRONMENT in "${ENVIRONMENTS[@]}"; do
-    for PLATFORM in "${PLATFORMS[@]}"; do
+for PLATFORM in "${PLATFORMS[@]}"; do
+  for ENVIRONMENT in "${ENVIRONMENTS[@]}"; do
       for IMAGE_TYPE in "${IMAGE_TYPES[@]}"; do
         if [ "$IMAGE_TYPE" == "arm32" ] && [ "$PLATFORM" != "linux/arm/v7" ]; then
           printWarn "WARNING: Arm32 images can only use linux/arm/v7 platform, skipping"
