@@ -369,9 +369,6 @@ public class Orchestrator {
 		connectToDockerNetwork(user.dockerNetwork);
 		if (user.stubsFactory != null) {
 			// make sure to use proper class loader
-			System.err.println("---> Setting classLoader " + user.stubsFactory.stubsClassLoader.theClassLoader);
-			System.err.println("---> Setting classLoader with path: " + user.stubsFactory.stubsPath);
-
 			Thread.currentThread().setContextClassLoader(user.stubsFactory.stubsClassLoader.theClassLoader);
 		}
 		userContext = user;

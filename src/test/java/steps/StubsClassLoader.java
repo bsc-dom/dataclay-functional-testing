@@ -112,13 +112,18 @@ public class StubsClassLoader {
 													final String[] strArgs) {
 		K obj = null;
 		try {
+			System.out.println("Creating instance of class " + className);
 			System.out.println("Provided constructor args " + Arrays.toString(strArgs));
 			final Class<?> clazz = theClassLoader.loadClass(className);
 			Constructor cons = null;
+			System.out.println("Looking for constructor in class " + clazz.getName());
 			for (Constructor m : clazz.getConstructors()) {
-				//ONLY ONE CONSTRUCTOR SUPPORTED
-				cons = m;
-				break;
+				if (!m.getDeclaringClass().equals(DataClayObject.class)) {
+					//ONLY ONE CONSTRUCTOR SUPPORTED
+					System.out.println("Found constructor " + m + " of class " + m.getDeclaringClass());
+					cons = m;
+					break;
+				}
 			}
 			Object[] initArgs = null;
 			if (cons.getParameterCount() > 0) {

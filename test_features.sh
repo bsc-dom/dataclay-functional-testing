@@ -85,7 +85,7 @@ function prepare_images {
 }
 ################################## Main ####################################
 set -e
-printWarn "WARNING: If you are running tests in local, do NOT run them in parallel, shared volumes could end up into inconsistent status"
+printWarn "Do NOT run tests in parallel, shared volumes could end up into inconsistent status"
 printInfo "Usage: $0 [--tests \"mytest.feature othertest.feature\"] [--environments \"py37 jdk11\"] [--image-types \"alpine\"] \
   [--platforms \"linux/amd64\"] [--debug] "
 
