@@ -138,14 +138,14 @@ public class Orchestrator {
 		// Do not force pull linux/amd64 images to allow local testing
 		if (!archImage.equals("linux/amd64")) {
 			String platformParam = "--platform " + archImage;
-			System.out.println("docker pull " + platformParam + " bscdataclay/logicmodule:" + javaDockerImage);
-			runProcess("docker pull " + platformParam + " bscdataclay/logicmodule:" + javaDockerImage, null);
-			System.out.println("docker pull " + platformParam + " bscdataclay/dsjava:" + javaDockerImage);
-			runProcess("docker pull " + platformParam + " bscdataclay/dsjava:" + javaDockerImage, null);
-			System.out.println("docker pull " + platformParam + " bscdataclay/dspython:" + pythonDockerImage);
-			runProcess("docker pull " + platformParam + " bscdataclay/dspython:" + pythonDockerImage, null);
-			System.out.println("docker pull " + platformParam + " bscdataclay/client:" + javaDockerImage);
-			runProcess("docker pull " + platformParam + " bscdataclay/client:" + javaDockerImage, null);
+			System.out.println("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/logicmodule:" + javaDockerImage);
+			runProcess("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/logicmodule:" + javaDockerImage, null);
+			System.out.println("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/dsjava:" + javaDockerImage);
+			runProcess("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/dsjava:" + javaDockerImage, null);
+			System.out.println("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/dspython:" + pythonDockerImage);
+			runProcess("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/dspython:" + pythonDockerImage, null);
+			System.out.println("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/client:" + javaDockerImage);
+			runProcess("docker pull " + platformParam + " dom-ci.bsc.es/bscdataclay/client:" + javaDockerImage, null);
 		}
 	}
 
@@ -305,7 +305,7 @@ public class Orchestrator {
 		// --user " + userID + ":" + groupID + "
 		String command = "docker run --rm -e HOST_USER_ID=" + userID + " -e HOST_GROUP_ID=" + groupID
 				+ " --platform " + archImage + " --network=" + dockerNetwork + " " + mountPoints
-				+ " bscdataclay/client:" + dockerImage + " " + dataClayCommand + debugFlag;
+				+ " dom-ci.bsc.es/bscdataclay/client:" + dockerImage + " " + dataClayCommand + debugFlag;
 		System.err.println(command);
 		runProcess(command, null);
 	}

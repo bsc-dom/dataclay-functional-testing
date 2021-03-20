@@ -5,7 +5,7 @@ networks:
       name: "dataclay-testing-network"
 services:
   logicmoduleA:
-    image: "bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "12034:12034"
@@ -23,7 +23,7 @@ services:
        test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
          
   dsjavaA:
-    image: "bscdataclay/dsjava:${JAVACLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "3127:3127"
@@ -42,7 +42,7 @@ services:
        test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
 
   dspythonA:
-    image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "6867:6867"

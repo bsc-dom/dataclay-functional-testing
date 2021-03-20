@@ -1,11 +1,10 @@
 ARG ENVIRONMENT
-ARG REGISTRY=""
-FROM ${REGISTRY}bscdataclay/continuous-integration:testing-${ENVIRONMENT}-base
-# Get jars
+FROM dom-ci.bsc.es/bscdataclay/continuous-integration:testing-${ENVIRONMENT}-base
+# Get jars from local to avoid copying it from different architectures
 COPY ./dataclay.jar /dataclay.jar
 COPY ./testing-target /testing/target
 COPY ./allure /testing/allure
-COPY ./run_test.sh /testing/run_test.sh
+COPY ./entrypoint.sh /testing/entrypoint.sh
 
 # Entrypoint
-ENTRYPOINT ["/testing/run_test.sh"]
+ENTRYPOINT ["/testing/entrypoint.sh"]

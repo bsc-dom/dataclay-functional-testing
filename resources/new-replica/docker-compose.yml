@@ -5,7 +5,7 @@ networks:
       name: "dataclay-testing-network"
 services:
   logicmodule:
-    image: "bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "12034:12034"
@@ -23,7 +23,7 @@ services:
        test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
          
   dsjava:
-    image: "bscdataclay/dsjava:${JAVACLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "3127:3127"
@@ -42,7 +42,7 @@ services:
        test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
 
   dsjava2:
-    image: "bscdataclay/dsjava:${JAVACLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "4127:4127"
@@ -61,7 +61,7 @@ services:
       test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
 
   dsjava3:
-    image: "bscdataclay/dsjava:${JAVACLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     ports:
       - "5127:5127"
@@ -80,7 +80,7 @@ services:
       test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
 
   dspython:
-    image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     command: "--debug"
     ports:
@@ -99,7 +99,7 @@ services:
       test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
 
   dspython2:
-    image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     command: "--debug"
     ports:
@@ -119,7 +119,7 @@ services:
       test: ["CMD-SHELL", "/home/dataclayusr/dataclay/health/health_check.sh"]
 
   dspython3:
-    image: "bscdataclay/dspython:${PYCLAY_IMAGE}"
+    image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     platform: ${IMAGE_PLATFORM}
     command: "--debug"
     ports:

@@ -1,0 +1,31 @@
+version: 2.6.dev.build{build}
+build_cloud: bsccsdomci01
+branches:
+  only:
+    - main
+skip_tags: true
+skip_branch_with_pr: true
+image: Ubuntu1804
+max_jobs: 1
+environment:
+  matrix:
+    - TEST: makepersistent
+    - TEST: getbyalias
+    - TEST: dynamicity
+    - TEST: new-replica
+    - TEST: new-version-consolidate
+    - TEST: federation
+build_script:
+  - |
+    ./test_features.sh --tests "${TEST}.feature" --environments-with-prefix jdk
+    EXIT_CODE=$?
+    mkdir -p ~/allure-results/$APPVEYOR_BUILD_ID/
+    cp -r ./allure-results/* ~/allure-results/$APPVEYOR_BUILD_ID/
+    exit $EXIT_CODE
+notifications:
+  - provider: Email
+    to:
+      - dgasull@bsc.es
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true

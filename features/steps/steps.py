@@ -130,7 +130,7 @@ def dataclaycmd(context, client_properties_path, testing_network, command, comma
         debug_flag = "--debug"
     cmd = f"docker run --rm --platform {arch} --network={testing_network} {mount_points} \
         -e HOST_USER_ID={user_id} -e HOST_GROUP_ID={group_id} \
-        bscdataclay/client:{javadockerimg} {command} {debug_flag}"
+        dom-ci.bsc.es/bscdataclay/client:{javadockerimg} {command} {debug_flag}"
     print(cmd)
     os.system(cmd)
 
@@ -162,10 +162,10 @@ def prepare_images(context):
     if arch != "linux/amd64":
         platform_arg = f"--platform {arch}"
         os.system(f"docker pull {platform_arg} linuxserver/docker-compose")
-        os.system(f"docker pull {platform_arg} bscdataclay/logicmodule:{javadockerimg}")
-        os.system(f"docker pull {platform_arg} bscdataclay/dsjava:{javadockerimg}")
-        os.system(f"docker pull {platform_arg} bscdataclay/client:{javadockerimg}")
-        os.system(f"docker pull {platform_arg} bscdataclay/dspython:{dockerimg}")
+        os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/logicmodule:{javadockerimg}")
+        os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/dsjava:{javadockerimg}")
+        os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/client:{javadockerimg}")
+        os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/dspython:{dockerimg}")
 
 
 def clean_dataclay(context, docker_compose_path, testing_network):

@@ -1,4 +1,3 @@
-LANGUAGES=(java python)
 ENVIRONMENTS=(jdk8 jdk11 py36 py37 py38)
-ARCHS=(linux/amd64 linux/arm/v7 linux/arm64)
-IMAGES=(normal slim alpine)
+PLATFORMS=(linux/amd64 linux/arm/v7 linux/arm64)
+IMAGE_TYPES=(normal slim alpine arm32)
