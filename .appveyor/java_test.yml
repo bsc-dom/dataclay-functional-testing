@@ -14,8 +14,6 @@ platform:
 os:
   - normal
   - slim
-  - alpine
-  - arm32
 configuration:
   - jdk8
   - jdk11
