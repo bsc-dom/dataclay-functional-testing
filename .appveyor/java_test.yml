@@ -11,12 +11,11 @@ platform:
   - linux/amd64
   - linux/arm64
   - linux/arm/v7
-os:
+configuration:
   - normal
   - slim
-configuration:
-  - jdk8
-  - jdk11
+  - alpine
+  - arm32
 environment:
   matrix:
     - FEATURE: makepersistent
@@ -29,14 +28,13 @@ environment:
 build_script:
   - |
     echo "Platform = $PLATFORM"
-    echo "Environment = $CONFIGURATION"
+    echo "Image type = $CONFIGURATION"
     echo "Feature = $FEATURE"
-    echo "Image type = $APPVEYOR_BUILD_WORKER_IMAGE"
     docker run --rm -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -w=$APPVEYOR_BUILD_FOLDER \
           dom-ci.bsc.es/bscdataclay/continuous-integration:testing \
-          ./test_features.sh --tests "${FEATURE}.feature" --platforms "$PLATFORM" --image-types "$APPVEYOR_BUILD_WORKER_IMAGE" --environments "$CONFIGURATION"
+          ./test_features.sh --tests "${FEATURE}.feature" --platforms "$PLATFORM" --image-types "$CONFIGURATION" --environments-with-prefix jdk
     EXIT_CODE=$?
     mkdir -p ~/allure-results/$APPVEYOR_BUILD_ID/
     cp -r ./allure-results/* ~/allure-results/$APPVEYOR_BUILD_ID/
