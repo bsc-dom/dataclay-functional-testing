@@ -17,7 +17,11 @@ environment:
     - TEST: federation
 build_script:
   - |
-    ./test_features.sh --tests "${TEST}.feature" --environments-with-prefix py
+    docker run -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -w=$APPVEYOR_BUILD_FOLDER \
+          dom-ci.bsc.es/bscdataclay/continuous-integration:testing \
+          ./test_features.sh --tests "${TEST}.feature" --environments-with-prefix py
     EXIT_CODE=$?
     mkdir -p ~/allure-results/$APPVEYOR_BUILD_ID/
     cp -r ./allure-results/* ~/allure-results/$APPVEYOR_BUILD_ID/
