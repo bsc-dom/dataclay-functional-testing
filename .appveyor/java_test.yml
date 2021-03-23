@@ -7,21 +7,31 @@ skip_tags: true
 skip_branch_with_pr: true
 image: Ubuntu1804
 max_jobs: 1
+platform:
+  - linux/amd64
+  - linux/arm64
+  - linux/arm/v7
+configuration:
+  - normal
+  - slim
+  - alpine
+  - arm32
 environment:
   matrix:
-    - TEST: makepersistent
-    - TEST: getbyalias
-    - TEST: dynamicity
-    - TEST: new-replica
-    - TEST: new-version-consolidate
-    - TEST: federation
+    - FEATURE: makepersistent
+    - FEATURE: getbyalias
+    - FEATURE: dynamicity
+    - FEATURE: new-replica
+    - FEATURE: new-replica
+    - FEATURE: new-version-consolidate
+    - FEATURE: federation
 build_script:
   - |
     docker run --rm -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -w=$APPVEYOR_BUILD_FOLDER \
           dom-ci.bsc.es/bscdataclay/continuous-integration:testing \
-          ./test_features.sh --tests "${TEST}.feature" --environments-with-prefix jdk
+          ./test_features.sh --tests "${TEST}.feature" --platform "$PLATFORM" --image-types "$CONFIGURATION" --environments-with-prefix jdk
     EXIT_CODE=$?
     mkdir -p ~/allure-results/$APPVEYOR_BUILD_ID/
     cp -r ./allure-results/* ~/allure-results/$APPVEYOR_BUILD_ID/
