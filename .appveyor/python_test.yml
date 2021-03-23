@@ -17,7 +17,7 @@ environment:
     - TEST: federation
 build_script:
   - |
-    docker run -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
+    docker run --rm -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -w=$APPVEYOR_BUILD_FOLDER \
           dom-ci.bsc.es/bscdataclay/continuous-integration:testing \

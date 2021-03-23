@@ -3,6 +3,7 @@ package steps;
 
 import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.util.ids.ExecutionEnvironmentID;
+import es.bsc.dataclay.util.ids.ObjectID;
 import org.yaml.snakeyaml.constructor.Construct;
 
 import java.io.File;
@@ -118,7 +119,14 @@ public class StubsClassLoader {
 			Constructor cons = null;
 			System.out.println("Looking for constructor in class " + clazz.getName());
 			for (Constructor m : clazz.getConstructors()) {
-				if (!m.getDeclaringClass().equals(DataClayObject.class)) {
+				if (!m.getDeclaringClass().equals(DataClayObject.class) && m.getParameterCount() == strArgs.length) {
+
+					if (m.getParameterCount() == 1) {
+						if (m.getParameterTypes()[0].equals(ObjectID.class)) {
+							continue;
+						}
+					}
+
 					//ONLY ONE CONSTRUCTOR SUPPORTED
 					System.out.println("Found constructor " + m + " of class " + m.getDeclaringClass());
 					cons = m;
