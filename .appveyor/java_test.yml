@@ -5,36 +5,38 @@ branches:
     - main
 skip_tags: true
 skip_branch_with_pr: true
-image: Ubuntu1804
 max_jobs: 1
+image:
+  - normal
+  - slim
+  - alpine
 platform:
   - linux/amd64
   - linux/arm64
   - linux/arm/v7
 configuration:
-  - normal
-  - slim
-  - alpine
-  - arm32
+  - jdk8
+  - jdk11
 environment:
   matrix:
     - FEATURE: makepersistent
     - FEATURE: getbyalias
     - FEATURE: dynamicity
     - FEATURE: new-replica
-    - FEATURE: new-replica
     - FEATURE: new-version-consolidate
     - FEATURE: federation
 build_script:
   - |
+    echo "Image = $APPVEYOR_BUILD_WORKER_IMAGE"
     echo "Platform = $PLATFORM"
-    echo "Image type = $CONFIGURATION"
+    echo "Environment = $CONFIGURATION"
     echo "Feature = $FEATURE"
     docker run --rm -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -w=$APPVEYOR_BUILD_FOLDER \
           dom-ci.bsc.es/bscdataclay/continuous-integration:testing \
-          ./test_features.sh --tests "${FEATURE}.feature" --platforms "$PLATFORM" --image-types "$CONFIGURATION" --environments-with-prefix jdk
+          ./test_features.sh --tests "${FEATURE}.feature" --platforms "$PLATFORM" \
+          --image-types "$APPVEYOR_BUILD_WORKER_IMAGE" --environments "$CONFIGURATION"
     EXIT_CODE=$?
     mkdir -p ~/allure-results/$APPVEYOR_BUILD_ID/
     cp -r ./allure-results/* ~/allure-results/$APPVEYOR_BUILD_ID/
