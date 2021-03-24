@@ -6,12 +6,12 @@ branches:
 skip_tags: true
 skip_branch_with_pr: true
 max_jobs: 1
+### MAXIMUM allowed combinations are 100, so images x platforms x configurations x environments <= 100 ####
 image:
   - normal
   - slim
   - alpine
 platform:
-  - linux/amd64
   - linux/arm64
 configuration:
   - jdk8
