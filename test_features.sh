@@ -20,8 +20,10 @@ function test_feature {
     docker cp $CONTAINER_ID:/testing/target $PWD/target
     docker rm $CONTAINER_ID
   fi
+  docker network create dataclay-testing-network
   set +e
   COMMAND="docker run --rm --platform $PLATFORM \
+    --network dataclay-testing-network \
     -e HOST_PWD=$PWD \
     -e HOST_USER_ID=$(id -u) \
     -e HOST_GROUP_ID=$(id -g) \
@@ -34,7 +36,9 @@ function test_feature {
     dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT $TEST $ENVIRONMENT $PLATFORM $IMAGE_TYPE \"$CUCUMBER_OPTIONS\""
   echo $COMMAND
   eval $COMMAND
-  return $?
+  RESULT=$?
+  docker network rm dataclay-testing-network
+  return $RESULT
 }
 
 #=== FUNCTION ================================================================
@@ -80,7 +84,6 @@ function prepare_images {
   fi
   docker_pull dom-ci.bsc.es/bscdataclay/client:develop${IMAGE_TAG}
   docker_pull dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT
-  docker pull linuxserver/docker-compose:latest
   printf "Done! \n"
 }
 ################################## Main ####################################
@@ -207,6 +210,7 @@ for PLATFORM in "${PLATFORMS[@]}"; do
           if [ $USE_LOCAL_IMAGES == false ]; then
             prepare_images
           fi
+
           test_feature
           RESULT=$?
           if [ $RESULT -ne 0 ]; then

@@ -12,3 +12,5 @@ RUN sh /get-docker.sh
 RUN pip3 install behave allure-behave
 
 RUN python3 -c "from grpc._cython import cygrpc as _cygrpc"
+RUN pip3 install docker-compose
+RUN docker-compose --version

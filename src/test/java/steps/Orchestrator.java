@@ -241,13 +241,15 @@ public class Orchestrator {
 		String pythonDockerImage = dockerTags.getSecond();
 		String pwd = System.getProperty("host_pwd");
 		String archImage = System.getProperty("arch", "");
+		Map<String, String> envVars = new HashMap<>();
+		envVars.put("PYCLAY_IMAGE", pythonDockerImage);
+		envVars.put("JAVACLAY_IMAGE", javaDockerImage);
+		envVars.put("IMAGE_PLATFORM", archImage);
+		envVars.put("TESTING_NETWORK", testNetwork);
 
-		String dockerComposeCmd = "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v " + pwd + ":" + pwd
-				+ " -e PYCLAY_IMAGE=" + pythonDockerImage + " -e JAVACLAY_IMAGE=" + javaDockerImage
-				+ " -e IMAGE_PLATFORM=" + archImage + " -e TESTING_NETWORK=" + testNetwork
-				+ " -w=" + pwd + " linuxserver/docker-compose -f " +  dockerFilePath + " " + command;
+		String dockerComposeCmd = "docker-compose -f " +  dockerFilePath + " " + command;
 		System.err.println(dockerComposeCmd);
-		runProcess(dockerComposeCmd, null);
+		runProcess(dockerComposeCmd, envVars);
 	}
 
 	/**
@@ -363,10 +365,9 @@ public class Orchestrator {
 		if (user == null) {
 			System.err.println("---> Creating user " + testUserName);
 			user = new TestUser(testUserName);
-			createDockerNetwork(user.dockerNetwork);
 			TEST_USERS.put(testUserName, user);
 		}
-		connectToDockerNetwork(user.dockerNetwork);
+
 		if (user.stubsFactory != null) {
 			// make sure to use proper class loader
 			Thread.currentThread().setContextClassLoader(user.stubsFactory.stubsClassLoader.theClassLoader);

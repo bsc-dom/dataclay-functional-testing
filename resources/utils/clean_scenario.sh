@@ -12,8 +12,6 @@ for network in $DATACLAY_TESTING_NETWORKS; do
       fi
     fi
   done
-  resources/utils/disconnect_network.sh $network
-  docker network rm $network
 done
 rm -rf /testing/stubs/*
 rm -rf /testing/dbfiles/*

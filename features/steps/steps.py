@@ -25,10 +25,8 @@ def get_or_create_user(user_name):
         test_user = TestUser(user_name)
         ALL_TEST_USERS[user_name] = test_user
         test_user.docker_network = f"dataclay-testing-network"
-        create_docker_network(test_user.docker_network)
     else:
         test_user = ALL_TEST_USERS.get(user_name)
-    connect_to_docker_network(test_user.docker_network)
     return test_user
 
 
@@ -70,10 +68,11 @@ def dockercompose(context, docker_compose_path, testing_network, command, comman
     dockerimg, javadockerimg = get_docker_images_to_use(context)
     arch = context.config.userdata['arch']
     pwd = to_absolute_path_for_docker_volumes(context, "")
-    cmd = f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v {pwd}:{pwd} \
-            -e PYCLAY_IMAGE={dockerimg} -e JAVACLAY_IMAGE={javadockerimg} \
-            -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} \
-            -w={pwd} linuxserver/docker-compose -f {docker_compose_path} {command}"
+    os.environ["PYCLAY_IMAGE"] = dockerimg
+    os.environ["JAVACLAY_IMAGE"] = javadockerimg
+    os.environ["IMAGE_PLATFORM"] = arch
+    os.environ["TESTING_NETWORK"] = testing_network
+    cmd = f"docker-compose -f {docker_compose_path} {command}"
     eprint(cmd)
     os.system(cmd)
 
@@ -161,7 +160,6 @@ def prepare_images(context):
     # Do not force pull linux/amd64 images to allow local testing
     if arch != "linux/amd64":
         platform_arg = f"--platform {arch}"
-        os.system(f"docker pull {platform_arg} linuxserver/docker-compose")
         os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/logicmodule:{javadockerimg}")
         os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/dsjava:{javadockerimg}")
         os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/client:{javadockerimg}")

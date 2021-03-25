@@ -30,11 +30,7 @@ build_script:
     echo "Platform = $PLATFORM"
     echo "Environment = $CONFIGURATION"
     echo "Feature = $FEATURE"
-    docker run --rm -v $APPVEYOR_BUILD_FOLDER:$APPVEYOR_BUILD_FOLDER \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          -w=$APPVEYOR_BUILD_FOLDER \
-          dom-ci.bsc.es/bscdataclay/continuous-integration:testing \
-          ./test_features.sh --tests "${FEATURE}.feature" --platforms "$PLATFORM" \
+    ./test_features.sh --tests "${FEATURE}.feature" --platforms "$PLATFORM" \
           --image-types "$APPVEYOR_BUILD_WORKER_IMAGE" --environments "$CONFIGURATION"
     EXIT_CODE=$?
     mkdir -p ~/allure-results/$APPVEYOR_BUILD_ID/
