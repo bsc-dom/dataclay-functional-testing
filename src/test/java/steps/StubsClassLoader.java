@@ -119,6 +119,7 @@ public class StubsClassLoader {
 			Constructor cons = null;
 			System.out.println("Looking for constructor in class " + clazz.getName());
 			for (Constructor m : clazz.getConstructors()) {
+				System.out.println("Checking constructor " + m + " of class " + m.getDeclaringClass() + " with " + m.getParameterCount() + " params == " + strArgs.length);
 				if (!m.getDeclaringClass().equals(DataClayObject.class) && m.getParameterCount() == strArgs.length) {
 
 					if (m.getParameterCount() == 1) {

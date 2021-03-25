@@ -1,18 +1,19 @@
 #!/bin/bash
-echo "==> Cleaning scenario"
-DATACLAY_TESTING_NETWORKS=$(docker network ls | grep dataclay-testing | awk '{print $2}')
-for network in $DATACLAY_TESTING_NETWORKS; do
-  IMAGES_IN_NETWORK=$(docker network inspect -f '{{range .Containers}}{{.Name}} {{end}}' $network)
-  for i in $IMAGES_IN_NETWORK; do
-    IMAGE_NAME=$(docker inspect -f "{{.Config.Image}}" $i)
-    if [[ $IMAGE_NAME == *"bscdataclay"* ]]; then
-      if [[ $IMAGE_NAME != *"continuous-integration"* ]]; then
-        echo "        => Removing $i container of image $IMAGE_NAME"
-        docker rm -v -f $i
-      fi
-    fi
+function remove_containers {
+  IMAGE=$1
+  CONTAINERS=$(docker ps -a | grep "$IMAGE" | awk '{print $1}')
+  for container in $CONTAINERS; do
+    echo "==> Removing $container"
+    docker rm -v -f $container
   done
-done
+}
+echo "==> Cleaning scenario"
+remove_containers "dom-ci.bsc.es/bscdataclay/logicmodule"
+remove_containers "dom-ci.bsc.es/bscdataclay/dsjava"
+remove_containers "dom-ci.bsc.es/bscdataclay/dspython"
+remove_containers "dom-ci.bsc.es/bscdataclay/client"
+remove_containers "dom-ci.bsc.es/bscdataclay/initializer"
 rm -rf /testing/stubs/*
 rm -rf /testing/dbfiles/*
 rm -rf stubs/*
+echo "<== Clean!"

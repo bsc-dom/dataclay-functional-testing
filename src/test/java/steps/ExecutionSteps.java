@@ -63,7 +63,7 @@ public class ExecutionSteps {
 									 String className) {
 		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
 		testUser.userObjects.put(objectName,
-				testUser.stubsFactory.newInstance(className, ""));
+				testUser.stubsFactory.newInstance(className, null));
 	}
 
 	@And("{string} runs {string} method with params {string} in object {string}")

@@ -20,8 +20,8 @@ function test_feature {
     docker cp $CONTAINER_ID:/testing/target $PWD/target
     docker rm $CONTAINER_ID
   fi
-  docker network create dataclay-testing-network
   set +e
+  docker network create dataclay-testing-network
   COMMAND="docker run --rm --platform $PLATFORM \
     --network dataclay-testing-network \
     -e HOST_PWD=$PWD \

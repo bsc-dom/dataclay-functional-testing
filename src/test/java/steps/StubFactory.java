@@ -19,7 +19,10 @@ public class StubFactory {
 	}
 
 	public Object newInstance(final String className, String constructorParams) {
-		String[] paramsStr = constructorParams.split(" ");
+		String[] paramsStr = new String[0];
+		if (constructorParams != null) {
+			paramsStr = constructorParams.split(" ");
+		}
 		return stubsClassLoader.newInstance("model." + className, paramsStr);
 	}
 
