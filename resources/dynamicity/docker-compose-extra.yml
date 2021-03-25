@@ -6,7 +6,6 @@ networks:
 services:
   dsjava2:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
-    platform: ${IMAGE_PLATFORM}
     ports:
       - "4127:4127"
     command: ""
@@ -23,7 +22,6 @@ services:
 
   dspython2:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
-    platform: ${IMAGE_PLATFORM}
     command: ""
     ports:
       - "7867:7867"

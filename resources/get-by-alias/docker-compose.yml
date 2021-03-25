@@ -6,7 +6,6 @@ networks:
 services:
   logicmodule:
     image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
-    platform: ${IMAGE_PLATFORM}
     ports:
       - "12034:12034"
     command: "--debug"
@@ -24,7 +23,6 @@ services:
          
   dsjava:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
-    platform: ${IMAGE_PLATFORM}
     ports:
       - "3127:3127"
     command: "--debug"
@@ -43,7 +41,6 @@ services:
 
   dspython:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
-    platform: ${IMAGE_PLATFORM}
     command: "--debug"
     ports:
       - "6867:6867"
