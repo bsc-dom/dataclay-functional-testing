@@ -68,11 +68,10 @@ def dockercompose(context, docker_compose_path, testing_network, command, comman
     dockerimg, javadockerimg = get_docker_images_to_use(context)
     arch = context.config.userdata['arch']
     pwd = to_absolute_path_for_docker_volumes(context, "")
-    os.environ["PYCLAY_IMAGE"] = dockerimg
-    os.environ["JAVACLAY_IMAGE"] = javadockerimg
-    os.environ["IMAGE_PLATFORM"] = arch
-    os.environ["TESTING_NETWORK"] = testing_network
-    cmd = f"docker-compose -f {docker_compose_path} {command}"
+    cmd = f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v {pwd}:{pwd} \
+                -e PYCLAY_IMAGE={dockerimg} -e JAVACLAY_IMAGE={javadockerimg} \
+                -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} \
+                -w={pwd} linuxserver/docker-compose -f {docker_compose_path} {command}"
     eprint(cmd)
     os.system(cmd)
 

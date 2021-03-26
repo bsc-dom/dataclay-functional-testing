@@ -14,6 +14,13 @@ services:
       - DATASERVICE_JAVA_PORT_TCP=4127
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -30,6 +37,13 @@ services:
       - DATASERVICE_PYTHON_PORT_TCP=7867
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

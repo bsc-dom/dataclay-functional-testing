@@ -171,7 +171,9 @@ public class StubsClassLoader {
 	private Object cast(final Class<?> classType, final String objectToCast){
 		Object castObject = null;
 		System.out.println("Casting " + objectToCast + " to class " + classType.getName());
-
+		if (objectToCast.equals("null")) {
+			return null;
+		}
 		if (objectToCast.startsWith("obj_")) {
 			// get by ref
 			return Orchestrator.userContext.userObjects.get(objectToCast);

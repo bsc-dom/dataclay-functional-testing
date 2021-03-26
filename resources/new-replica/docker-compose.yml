@@ -14,7 +14,13 @@ services:
       - LOGICMODULE_HOST=logicmodule
       - DATACLAY_ADMIN_USER=admin
       - DATACLAY_ADMIN_PASSWORD=admin
-      #- EXPOSED_IP_FOR_CLIENT=127.0.0.1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -33,6 +39,13 @@ services:
       - DATASERVICE_JAVA_PORT_TCP=3127
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -51,6 +64,13 @@ services:
       - DATASERVICE_JAVA_PORT_TCP=4127
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -69,6 +89,13 @@ services:
       - DATASERVICE_JAVA_PORT_TCP=5127
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -87,6 +114,13 @@ services:
       - DATASERVICE_NAME=DS1
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -106,6 +140,13 @@ services:
       - DATASERVICE_PYTHON_PORT_TCP=7867
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -125,6 +166,13 @@ services:
       - DATASERVICE_PYTHON_PORT_TCP=8867
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          memory: 20M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

@@ -15,7 +15,7 @@ def create_obj_step_impl(context, user_name, obj_ref, classname, params):
 @when('"{user_name}" creates "{obj_ref}" object of class "{classname}"')
 @then('"{user_name}" creates "{obj_ref}" object of class "{classname}"')
 def step_impl(context, user_name, obj_ref, classname):
-    create_obj_step_impl(context, user_name, obj_ref, classname, "null")
+    create_obj_step_impl(context, user_name, obj_ref, classname, "")
 
 @given('"{user_name}" runs "{method_name}" method with params "{params}" in object "{obj_ref}" and checks that result is "{check_result}"')
 @when('"{user_name}" runs "{method_name}" method with params "{params}" in object "{obj_ref}" and checks that result is "{check_result}"')
@@ -41,7 +41,7 @@ def exec_step_impl(context, user_name, method_name, params, obj_ref, result_ref)
 def step_impl(context, user_name, method_name, obj_ref, check_result):
     test_user = get_or_create_user(user_name)
     obj = test_user.user_objects[obj_ref]
-    result = call_method(test_user, type(obj).__name__, method_name, "null", obj)
+    result = call_method(test_user, type(obj).__name__, method_name, "", obj)
     print(f"Checking result {result} is equals to {check_result}")
     assert str(result) == check_result
 
@@ -49,7 +49,7 @@ def step_impl(context, user_name, method_name, obj_ref, check_result):
 @when('"{user_name}" runs "{method_name}" method with params "{params}" in object "{obj_ref}"')
 @then('"{user_name}" runs "{method_name}" method with params "{params}" in object "{obj_ref}"')
 def step_impl(context, user_name, method_name, params, obj_ref):
-    check_result = "null"
+    check_result = ""
     test_user = get_or_create_user(user_name)
     obj = test_user.user_objects[obj_ref]
     result = call_method(test_user, type(obj).__name__, method_name, params, obj)
@@ -58,7 +58,7 @@ def step_impl(context, user_name, method_name, params, obj_ref):
 
 def call_method(test_user, classname, method_name, theparams, instance_self=None):
 
-    if theparams == "null":
+    if theparams == "":
         params = list()
     else:
         params = theparams.split(' ')
@@ -80,6 +80,8 @@ def call_method(test_user, classname, method_name, theparams, instance_self=None
             param_type = type(cur_arg)
             if cur_arg.startswith("obj_"):
                 actual_args[key] = test_user.user_objects[cur_arg]
+            elif cur_arg.startswith("null"):
+                actual_args[key] = None
             elif cur_arg.startswith("execid_"):
                 actual_args[key] = test_user.user_objects[cur_arg]
             elif key in hints and param_type != hints[key]:
@@ -98,6 +100,6 @@ def call_method(test_user, classname, method_name, theparams, instance_self=None
     else:
         result = method_to_call(**actual_args)
     if result is None:
-        result = "null"
+        result = ""
     print(f"Returning result {result}")
     return result

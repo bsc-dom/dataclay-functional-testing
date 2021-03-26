@@ -23,6 +23,7 @@ function test_feature {
   set +e
   docker network create dataclay-testing-network
   COMMAND="docker run --rm --platform $PLATFORM \
+    --memory=50m \
     --network dataclay-testing-network \
     -e HOST_PWD=$PWD \
     -e HOST_USER_ID=$(id -u) \
