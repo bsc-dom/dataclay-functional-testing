@@ -9,6 +9,10 @@ services:
     ports:
       - "12034:12034"
     command: ""
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/garbage-collection
+        target: /dataclay/storage
     environment:
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
@@ -18,10 +22,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 300M
         reservations:
-          memory: 20M
+          memory: 50M
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -35,6 +38,10 @@ services:
     command: ""
     depends_on:
       - logicmodule
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/garbage-collection
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS1
       - DATASERVICE_JAVA_PORT_TCP=3127
@@ -43,10 +50,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -61,6 +67,10 @@ services:
     depends_on:
       - logicmodule
       - dsjava
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/garbage-collection
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS1
       - LOGICMODULE_PORT_TCP=12034
@@ -68,10 +78,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -85,6 +94,10 @@ services:
     command: ""
     depends_on:
       - logicmodule
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/garbage-collection
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS2
       - DATASERVICE_JAVA_PORT_TCP=4127
@@ -93,10 +106,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -111,6 +123,10 @@ services:
     depends_on:
       - logicmodule
       - dsjava2
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/garbage-collection
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS2
       - DATASERVICE_PYTHON_PORT_TCP=7867
@@ -119,10 +135,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

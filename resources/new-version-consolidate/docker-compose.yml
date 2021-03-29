@@ -8,7 +8,11 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     ports:
       - "12034:12034"
-    command: "--debug"
+    command: ""
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        target: /dataclay/storage
     environment:
       - LOGICMODULE_PORT_TCP=12034
       - LOGICMODULE_HOST=logicmodule
@@ -18,10 +22,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 300M
         reservations:
-          memory: 20M
+          memory: 50M
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -32,7 +35,11 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "3127:3127"
-    command: "--debug"
+    command: ""
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        target: /dataclay/storage
     depends_on:
       - logicmodule
     environment:
@@ -43,10 +50,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -57,7 +63,11 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "4127:4127"
-    command: "--debug"
+    command: ""
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        target: /dataclay/storage
     depends_on:
       - logicmodule
     environment:
@@ -68,10 +78,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -80,12 +89,16 @@ services:
 
   dspython:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
-    command: "--debug"
+    command: ""
     ports:
       - "6867:6867"
     depends_on:
       - logicmodule
       - dsjava
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS1
       - LOGICMODULE_PORT_TCP=12034
@@ -93,10 +106,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -105,12 +117,16 @@ services:
 
   dspython2:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
-    command: "--debug"
+    command: ""
     ports:
       - "7867:7867"
     depends_on:
       - logicmodule
       - dsjava2
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS2
       - DATASERVICE_PYTHON_PORT_TCP=7867
@@ -119,10 +135,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

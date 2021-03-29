@@ -9,6 +9,10 @@ services:
     ports:
       - "4127:4127"
     command: ""
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/dynamicity
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS2
       - DATASERVICE_JAVA_PORT_TCP=4127
@@ -17,10 +21,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -32,6 +35,10 @@ services:
     command: ""
     ports:
       - "7867:7867"
+    volumes:
+      - type: bind
+        source: /tmp/dataClay/functional-testing/storage/dynamicity
+        target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS2
       - DATASERVICE_PYTHON_PORT_TCP=7867
@@ -40,10 +47,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 50M
+          memory: 200M
         reservations:
-          memory: 20M
+          memory: 30M
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

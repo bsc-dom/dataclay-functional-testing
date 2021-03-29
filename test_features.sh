@@ -20,16 +20,27 @@ function test_feature {
     docker cp $CONTAINER_ID:/testing/target $PWD/target
     docker rm $CONTAINER_ID
   fi
+
+  # Clean dirs
+  pushd ./resources
+  for d in $(find . -name 'docker-compose*'); do
+    echo "Creating /tmp/dataClay/functional-testing/storage/$(dirname $d) directory"
+    mkdir -p /tmp/dataClay/functional-testing/storage/$(dirname $d)
+    rm -rf /tmp/dataClay/functional-testing/storage/$(dirname $d)/*
+  done
+  popd
+
+
   set +e
   docker network create dataclay-testing-network
   COMMAND="docker run --rm --platform $PLATFORM \
-    --memory=50m \
     --network dataclay-testing-network \
     -e HOST_PWD=$PWD \
     -e HOST_USER_ID=$(id -u) \
     -e HOST_GROUP_ID=$(id -g) \
     -e DEBUG=$DEBUG \
     -v /var/run/docker.sock:/var/run/docker.sock \
+    -v $HOME/.dataClay/functional-testing/storage/:/testing/storage:rw \
     -v $PWD/resources:/testing/resources:ro \
     -v $PWD/features:/testing/features:ro \
     -v $PWD/allure-results:/testing/allure-results:rw \

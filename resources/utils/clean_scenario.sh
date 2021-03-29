@@ -7,6 +7,7 @@ function remove_containers {
     docker rm -v -f $container
   done
 }
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 echo "==> Cleaning scenario"
 remove_containers "dom-ci.bsc.es/bscdataclay/logicmodule"
 remove_containers "dom-ci.bsc.es/bscdataclay/dsjava"
@@ -16,4 +17,5 @@ remove_containers "dom-ci.bsc.es/bscdataclay/initializer"
 rm -rf /testing/stubs/*
 rm -rf /testing/dbfiles/*
 rm -rf stubs/*
+rm -rf /testing/storage/*
 echo "<== Clean!"
