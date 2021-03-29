@@ -17,5 +17,10 @@ remove_containers "dom-ci.bsc.es/bscdataclay/initializer"
 rm -rf /testing/stubs/*
 rm -rf /testing/dbfiles/*
 rm -rf stubs/*
-rm -rf /testing/storage/*
+pushd $SCRIPTDIR/..
+for d in $(find . -name 'docker-compose*'); do
+    echo "Cleaning /tmp/dataClay/functional-testing/storage/$(dirname $d) directory"
+    rm -rf /testing/storage/$(dirname $d)/*
+done
+popd
 echo "<== Clean!"

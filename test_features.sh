@@ -40,7 +40,7 @@ function test_feature {
     -e HOST_GROUP_ID=$(id -g) \
     -e DEBUG=$DEBUG \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $HOME/.dataClay/functional-testing/storage/:/testing/storage:rw \
+    -v /tmp/dataClay/functional-testing/storage/:/testing/storage:rw \
     -v $PWD/resources:/testing/resources:ro \
     -v $PWD/features:/testing/features:ro \
     -v $PWD/allure-results:/testing/allure-results:rw \
