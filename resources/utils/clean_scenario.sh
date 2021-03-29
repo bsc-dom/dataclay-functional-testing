@@ -20,7 +20,6 @@ rm -rf stubs/*
 pushd $SCRIPTDIR/..
 for d in $(find . -name 'docker-compose*'); do
     echo "Cleaning /tmp/dataClay/functional-testing/storage/$(dirname $d) directory"
-
     rm -rf /testing/storage/$(dirname $d)/*
 done
 popd
