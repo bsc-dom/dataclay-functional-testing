@@ -69,7 +69,7 @@ services:
       - dsjava
     volumes:
       - type: bind
-        source: /testing/functional-testing/storage/dynamicity
+        source: /tmp/dataClay/functional-testing/storage/dynamicity
         target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS1
