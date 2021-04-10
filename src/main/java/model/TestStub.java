@@ -47,7 +47,7 @@ public interface TestStub {
 	 */
 	void makePersistent();
 
-
+	void sessionDetach();
 	void setObjectReadOnly();
 
 	BackendID newReplica(final BackendID optionalBackendID);

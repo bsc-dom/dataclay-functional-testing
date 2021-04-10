@@ -114,17 +114,23 @@ function deploy_testing_image {
     PLATFORMS_COMMAND=""
   fi
 
-  if [ "$PREFIX" == "jdk" ]; then
-    printMsg "Building and compiling javaclay functional tests"
+  #if [ "$PREFIX" == "jdk" ]; then
+  #  printMsg "Building and compiling javaclay functional tests"
     # build local changes in javaclay testing, pyclay just mount it but here we need to compile
-    docker build -f packager.jdk.Dockerfile -t dom-ci.bsc.es/bscdataclay/continuous-integration:javaclay-jar .
-    JAVACLAY_CONTAINER=$(docker create --rm  dom-ci.bsc.es/bscdataclay/continuous-integration:javaclay-jar)
-    docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
-    docker rm $JAVACLAY_CONTAINER
+  #  docker build -f packager.jdk.Dockerfile -t dom-ci.bsc.es/bscdataclay/continuous-integration:javaclay-jar .
+  #  JAVACLAY_CONTAINER=$(docker create --rm  dom-ci.bsc.es/bscdataclay/continuous-integration:javaclay-jar)
+  #  docker cp $JAVACLAY_CONTAINER:/testing/target/ ./testing-target
+  #  docker rm $JAVACLAY_CONTAINER
+  # fi
+  IMAGE_DC=""
+  if [ "${IMAGE_TYPES[0]}" != "normal" ]; then
+    IMAGE_DC="-${IMAGE_TYPES[0]}"
   fi
+
   deploy docker $DOCKER_BUILDX_COMMAND build --rm -f ${PREFIX}.${DOCKERFILE} -t $IMAGE_NAME \
            --build-arg ENVIRONMENT=$ENVIRONMENT \
            --build-arg ENVIRONMENT_VERSION=$ENVIRONMENT_VERSION \
+           --build-arg IMAGE_DC=${IMAGE_DC} \
            $PLATFORMS_COMMAND $DOCKER_PROGRESS \
            $DOCKER_COMMAND .
 }
@@ -159,15 +165,15 @@ while test $# -gt 0; do
     ;;
   --image-types)
     shift
-    IFS=' ' read -r -a IMAGE_TYPES <<< "$1"
+    IFS=' ' read -r -a IMAGE_TYPES <<< "$IMAGE_TYPES_STR"
     ;;
   --environments)
     shift
-    IFS=' ' read -r -a ENVIRONMENTS <<< "$1"
+    IFS=' ' read -r -a ENVIRONMENTS <<< "$IMAGES_STR"
     ;;
   --platforms)
     shift
-    IFS=' ' read -r -a PLATFORMS <<< "$1"
+    IFS=' ' read -r -a PLATFORMS <<< "$PLATFORMS_STR"
     ;;
   --plain)
     DOCKER_PROGRESS="--progress plain"
@@ -207,10 +213,11 @@ SECONDS=0
 printf -v PLATFORMS_ARG '%s,' "${PLATFORMS[@]}"
 PLATFORMS_ARG="${PLATFORMS_ARG%,}"
 
-# prepare javaclay jar, retrieve it from image dsjava
-CONTAINER_ID=$(docker create dom-ci.bsc.es/bscdataclay/dsjava:develop-slim)
-docker cp $CONTAINER_ID:/home/dataclayusr/dataclay/dataclay.jar $PWD/dataclay.jar
-docker rm $CONTAINER_ID
+# prepare javaclay jar, retrieve it from some of the image types provided
+#echo "Retrieving dataClay.jar from dom-ci.bsc.es/bscdataclay/dsjava:develop-${IMAGE_TYPES[0]} image "
+#CONTAINER_ID=$(docker create dom-ci.bsc.es/bscdataclay/dsjava:develop-${IMAGE_TYPES[0]})
+#docker cp $CONTAINER_ID:/home/dataclayusr/dataclay/dataclay.jar $PWD/dataclay.jar
+#docker rm $CONTAINER_ID
 
 if [ $DEPLOY_BASE == true ]; then
   for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
@@ -221,8 +228,8 @@ fi
 for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
   deploy_testing_image dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile
 done
-rm -rf $PWD/testing-target
-rm -f $PWD/dataclay.jar
+#rm -rf $PWD/testing-target
+#rm -f $PWD/dataclay.jar
 
 duration=$SECONDS
 echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."

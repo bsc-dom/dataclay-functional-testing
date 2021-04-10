@@ -35,7 +35,7 @@ Feature: Federation
       And "UserC" imports models in namespace "test_namespace" from dataClay at hostname "logicmoduleB" and port 22034
       And "UserC" get stubs from namespace "test_namespace" into "stubs/userC" directory
 
-
+  @debugging
   Scenario: federates an object with alias
     Given "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
@@ -128,7 +128,6 @@ Feature: Federation
       And "UserC" runs "replicaSourceIs" method with params "execid_DS1_B" in object "obj_federated_person_c" and checks that result is "True"
       And "UserC" finishes the session
 
-  @debugging
   Scenario: federation synchronization
     Given "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "SyncObject" with constructor params "Bob 33"

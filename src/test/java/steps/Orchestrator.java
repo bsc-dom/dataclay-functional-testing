@@ -56,6 +56,9 @@ public class Orchestrator {
 		/** User objects. */
 		public Map<String, Object> userObjects = new HashMap<>();
 
+		/** Environment variables for forked processes. */
+		public Map<String, String> envVars = new HashMap<>();
+
 		public TestUser(final String testUserName) {
 			this.name = testUserName;
 			//this.dockerNetwork = "dataclay-testing-" + testUserName.replace(" ", "_");
@@ -231,19 +234,26 @@ public class Orchestrator {
 	/**
 	 * Run docker-compose command
 	 * @param dockerFilePath Docker file path
+	 * @param envVars Environment variables in docker compose
 	 * @param testNetwork Network to be used in docker compose
 	 * @param command Command to run
 	 */
 	public static void dockerComposeCommand(final String dockerFilePath, final String testNetwork,
-											final String command) {
+											final Map<String, String> envVars, final String command) {
 		Tuple<String, String> dockerTags = getDockerImagesToUse();
 		String javaDockerImage = dockerTags.getFirst();
 		String pythonDockerImage = dockerTags.getSecond();
 		String pwd = System.getProperty("host_pwd");
 		String archImage = System.getProperty("arch", "");
+		String userEnvVars = "";
+		for (Map.Entry<String, String> curEnv : envVars.entrySet()) {
+			userEnvVars = userEnvVars + " -e " + curEnv.getKey() + "=" + curEnv.getValue();
+		}
+
+
 		String dockerComposeCmd = "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v " + pwd + ":" + pwd
 				+ " -e PYCLAY_IMAGE=" + pythonDockerImage + " -e JAVACLAY_IMAGE=" + javaDockerImage
-				+ " -e IMAGE_PLATFORM=" + archImage + " -e TESTING_NETWORK=" + testNetwork
+				+ " -e IMAGE_PLATFORM=" + archImage + " -e TESTING_NETWORK=" + testNetwork + userEnvVars
 				+ " -w=" + pwd + " linuxserver/docker-compose -f " +  dockerFilePath + " " + command;
 		System.err.println(dockerComposeCmd);
 		runProcess(dockerComposeCmd, null);
@@ -253,20 +263,22 @@ public class Orchestrator {
 	 * Run dataClay server commands via docker-compose
 	 * @param dockerComposeFilePath docker-compose file to use
 	 * @param testNetwork Network to be used in docker compose
+	 * @param envVars Environment variables to use in docker compose
 	 * @param command Command to run
 	 */
 	public static void dataClaySrv(final String dockerComposeFilePath,  final String testNetwork,
+								   final Map<String, String> envVars,
 								   final String command) {
 		switch (command) {
 				case DATACLAYSRV_START_COMMAND:
-					dockerComposeCommand(dockerComposeFilePath, testNetwork, "up -d");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork, envVars, "up -d");
 					break;
 				case DATACLAYSRV_STOP_COMMAND:
-					dockerComposeCommand(dockerComposeFilePath, testNetwork, "down");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork, envVars,"down");
 					break;
 				case DATACLAYSRV_KILL_COMMAND:
-					dockerComposeCommand(dockerComposeFilePath, testNetwork,"kill");
-					dockerComposeCommand(dockerComposeFilePath, testNetwork,"rm -s -f -v");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork, envVars,"kill");
+					dockerComposeCommand(dockerComposeFilePath, testNetwork, envVars,"rm -s -f -v");
 					break;
 			}
 
@@ -323,28 +335,32 @@ public class Orchestrator {
 	 * Clean dataClay
 	 * @param dockerCompose Docker-compose file to use
 	 * @param testNetwork Network to be used in docker compose
+	 * @param envVars Environment variables used in docker compose
 
 	 */
-	public static void cleanDataClay(final String dockerCompose, final String testNetwork) {
-		dataClaySrv(dockerCompose, testNetwork, DATACLAYSRV_KILL_COMMAND);
+	public static void cleanDataClay(final String dockerCompose, final String testNetwork, final Map<String, String> envVars) {
+		dataClaySrv(dockerCompose, testNetwork, envVars, DATACLAYSRV_KILL_COMMAND);
 	}
 
 	/**
 	 * Start dataClay
 	 * @param dockerCompose Docker-compose file to use
 	 * @param testNetwork Network to be used in docker compose
+	 * @param envVars Environment variables used in docker compose
 	 */
-	public static void startDataClay(final String dockerCompose, final String testNetwork) {
-		dataClaySrv(dockerCompose, testNetwork, DATACLAYSRV_START_COMMAND);
+	public static void startDataClay(final String dockerCompose, final String testNetwork, final Map<String, String> envVars) {
+		dataClaySrv(dockerCompose, testNetwork, envVars,DATACLAYSRV_START_COMMAND);
 	}
 
 	/**
 	 * Stop dataClay
 	 * @param dockerCompose Docker-compose file to use
 	 * @param testNetwork Network to be used in docker compose
+	 * @param envVars Environment variables used in docker compose
+
 	 */
-	public static void stopDataClay(final String dockerCompose, final String testNetwork) {
-		dataClaySrv(dockerCompose, testNetwork, DATACLAYSRV_STOP_COMMAND);
+	public static void stopDataClay(final String dockerCompose, final String testNetwork, final Map<String, String> envVars) {
+		dataClaySrv(dockerCompose, testNetwork, envVars, DATACLAYSRV_STOP_COMMAND);
 	}
 
 	/**

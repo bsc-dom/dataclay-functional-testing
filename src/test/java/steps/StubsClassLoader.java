@@ -2,6 +2,7 @@ package steps;
 
 
 import es.bsc.dataclay.DataClayObject;
+import es.bsc.dataclay.util.ids.DataClayInstanceID;
 import es.bsc.dataclay.util.ids.ExecutionEnvironmentID;
 import es.bsc.dataclay.util.ids.ObjectID;
 import org.yaml.snakeyaml.constructor.Construct;
@@ -181,6 +182,10 @@ public class StubsClassLoader {
 		if (objectToCast.startsWith("execid_")) {
 			// get by ref
 			return (ExecutionEnvironmentID) Orchestrator.userContext.userObjects.get(objectToCast);
+		}
+		if (objectToCast.startsWith("dataclayid_")) {
+			// get by ref
+			return (DataClayInstanceID) Orchestrator.userContext.userObjects.get(objectToCast);
 		}
 		if (classType.equals(String.class)) {
 			castObject = objectToCast;

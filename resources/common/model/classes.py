@@ -99,3 +99,65 @@ class SyncObject(DataClayObject):
     @dclayMethod(return_="str")
     def __str__(self):
         return " - Name: %s, value: %d" % (self.name, self.value)
+
+class NodeA(DataClayObject):
+    """
+    @ClassField node_b test_namespace.classes.NodeB
+    """
+
+    @dclayMethod()
+    def __init__(self):
+        self.node_b = None
+
+    @dclayMethod(return_="test_namespace.classes.NodeB")
+    def getNodeB(self):
+        return self.node_b
+
+    @dclayMethod(node_b="test_namespace.classes.NodeB")
+    def setNodeB(self, node_b):
+        self.node_b = node_b
+
+class NodeB(DataClayObject):
+    """
+    @ClassField node_a test_namespace.classes.NodeA
+    """
+
+    @dclayMethod()
+    def __init__(self):
+        self.node_a = None
+
+    @dclayMethod(return_="test_namespace.classes.NodeA")
+    def getNodeA(self):
+        return self.node_a
+
+    @dclayMethod(node_a="test_namespace.classes.NodeA")
+    def setNodeA(self, node_a):
+        self.node_a = node_a
+
+class BigObject(DataClayObject):
+    """
+    @ClassField obj_bytes anything
+    """
+    @dclayMethod()
+    def __init__(self):
+        import os
+        self.obj_bytes = bytearray(os.urandom(1000000))
+
+class LittleObject(DataClayObject):
+    """
+    @ClassField obj_bytes anything
+    """
+    @dclayMethod()
+    def __init__(self):
+        import os
+        self.obj_bytes = bytearray(os.urandom(100))
+
+class LotsOfObjects(DataClayObject):
+    """
+    @ClassField little_objs list<test_namespace.classes.LittleObject>
+    """
+    @dclayMethod()
+    def __init__(self):
+        self.little_objs = list()
+        for i in range(100):
+            self.little_objs.append(LittleObject())

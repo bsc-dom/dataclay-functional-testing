@@ -15,7 +15,7 @@
         <Logger name="DataServiceRuntime" level="debug"/>
         
         <Logger name="DataClayObjectLoader" level="debug"/>
-        <Logger name="DataClayObject" level="off" /> <!--  This is very verbose! -->
+        <Logger name="DataClayObject" level="debug" />
         
         <!--  Data service -->
         <Logger name="DataService" level="debug"/>
@@ -32,6 +32,10 @@
         <Logger name="heap.HeapManager" level="debug"/>
         <Logger name="ReferenceCounting" level="off"/>
         <Logger name="StorageLocation" level="debug"/>
+
+        <!-- Serialization -->
+        <Logger name="DataClaySerializationLib" level="off"/>
+        <Logger name="DataClayDeserializationLib" level="off"/>
         
         <!--  Logic module -->
         <Logger name="LogicModule" level="debug"/>

@@ -64,7 +64,7 @@ public class CommonSteps {
 	@And("{string} deploys dataClay with docker-compose.yml file {string}")
 	public void deploysDataClayWithDockerComposeYmlFile(String userName, String dockerComposePath) throws IOException {
 		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
-		Orchestrator.startDataClay(dockerComposePath, testUser.dockerNetwork);
+		Orchestrator.startDataClay(dockerComposePath, testUser.dockerNetwork, testUser.envVars);
 		Orchestrator.dataClayCMD(testUser.clientPropertiesPath, testUser.dockerNetwork,
 				"WaitForDataClayToBeAlive 100 5");
 		Allure.attachment("docker-compose.yml", Utils.readAllBytes(Paths.get(dockerComposePath)));
@@ -170,8 +170,21 @@ public class CommonSteps {
     @And("{string} stops {string} docker services deployed using {string}")
     public void stopsDockerService(String userName, String serviceNames, final String dockerComposePath) {
 		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
-		Orchestrator.dockerComposeCommand(dockerComposePath, testUser.dockerNetwork,"stop " + serviceNames);
+		Orchestrator.dockerComposeCommand(dockerComposePath, testUser.dockerNetwork, testUser.envVars,"stop " + serviceNames);
 
+	}
+
+    @And("{string} sets environment variable {string} to {string}")
+    public void setsEnvironmentVariableTo(String userName, String envVarName, String envVarValue) {
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+		testUser.envVars.put(envVarName, envVarValue);
+	}
+
+	@And("{string} gets id of {string} object into {string} variable")
+	public void getsIdOfObjectIntoVariable(String userName, String objRef, String objVar) {
+		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+		DataClayObject obj = (DataClayObject) testUser.userObjects.get(objRef);
+		testUser.userObjects.put(objVar, obj.getObjectID());
 	}
 }
 

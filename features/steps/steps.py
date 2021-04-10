@@ -15,6 +15,7 @@ class TestUser:
         self.account_name = ""
         self.account_pwd = ""
         self.docker_network = ""
+        self.env_vars = dict()
 
 
 ALL_TEST_USERS = dict()
@@ -53,12 +54,14 @@ def get_docker_images_to_use(context):
     return dockerimg, javadockerimg
 
 
-def dockercompose(context, docker_compose_path, testing_network, command, command_output=None):
+def dockercompose(context, docker_compose_path, testing_network, env_vars, command, command_output=None):
     """Calls docker-compose
         :param docker_compose_path: the docker-compose.yml file path
         :type docker_compose_path: string
         :param testing_network: name of network for docker compose
         :type testing_network: str
+        :param env_vars: environment variables to be set in docker compose
+        :type env_vars: dict<str, str>
         :param command: the docker-compose command to run
         :type command: string
         :param command_output: where to save docker command output
@@ -68,15 +71,20 @@ def dockercompose(context, docker_compose_path, testing_network, command, comman
     dockerimg, javadockerimg = get_docker_images_to_use(context)
     arch = context.config.userdata['arch']
     pwd = to_absolute_path_for_docker_volumes(context, "")
+
+    env_vars_str = ""
+    for key, value in env_vars.items():
+        env_vars_str = f"{env_vars_str} -e {key}={value}"
+
     cmd = f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v {pwd}:{pwd} \
                 -e PYCLAY_IMAGE={dockerimg} -e JAVACLAY_IMAGE={javadockerimg} \
-                -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} \
+                -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} {env_vars_str} \
                 -w={pwd} linuxserver/docker-compose -f {docker_compose_path} {command}"
     eprint(cmd)
     os.system(cmd)
 
 
-def dataclaysrv(context, docker_compose_file, testing_network, command, command_output=None):
+def dataclaysrv(context, docker_compose_file, testing_network, env_vars, command, command_output=None):
     """Manages dataClay docker services
         :param context: the current feature context
         :type context: context
@@ -84,22 +92,24 @@ def dataclaysrv(context, docker_compose_file, testing_network, command, command_
         :type docker_compose_file: str
         :param testing_network: name of network for docker compose
         :type testing_network: str
+        :param env_vars: environment variables for docker compose
+        :type env_vars: dict<str, str>
         :param command: command for dataclay services, it can be start, stop, kill,...
         :type command: string
         :param command_output: where to save docker command output
         :type command_output: string
     """
     if command == "start":
-        dockercompose(context, docker_compose_file, testing_network, "up -d", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, env_vars, "up -d", command_output=command_output)
     elif command == "stop":
-        dockercompose(context, docker_compose_file, testing_network, "down -v", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, env_vars, "down -v", command_output=command_output)
     elif command == "config":
-        dockercompose(context, docker_compose_file, testing_network, "config", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, env_vars, "config", command_output=command_output)
     elif command == "logs":
-        dockercompose(context, docker_compose_file, testing_network, "logs --no-color", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, env_vars, "logs --no-color", command_output=command_output)
     elif command == "kill":
-        dockercompose(context, docker_compose_file, testing_network, "kill", command_output=command_output)
-        dockercompose(context, docker_compose_file, testing_network, "rm -s -f -v", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, env_vars, "kill", command_output=command_output)
+        dockercompose(context, docker_compose_file, testing_network, env_vars, "rm -s -f -v", command_output=command_output)
 
 def dataclaycmd(context, client_properties_path, testing_network, command, command_mount_points=None):
     """Runs a dataclaycmd (NewAccount, NewModel,...)
@@ -165,7 +175,7 @@ def prepare_images(context):
         os.system(f"docker pull {platform_arg} dom-ci.bsc.es/bscdataclay/dspython:{dockerimg}")
 
 
-def clean_dataclay(context, docker_compose_path, testing_network):
+def clean_dataclay(context, docker_compose_path, testing_network, env_vars):
     """Kills all dataClay docker services
         :param context: the current feature context
         :type context: context
@@ -173,8 +183,10 @@ def clean_dataclay(context, docker_compose_path, testing_network):
         :type docker_compose_path: str
         :param testing_network: name of network for docker compose
         :type testing_network: str
+        :param env_vars: environment variables to use in docker compose
+        :type env_vars: dict<str, str>
     """
-    dataclaysrv(context, docker_compose_path, testing_network, "kill")
+    dataclaysrv(context, docker_compose_path, testing_network, env_vars, "kill")
 
 def save_logs(context, docker_compose_path, testing_network):
     """Save logs from dataClay docker services
@@ -281,7 +293,7 @@ def step_impl(context, user_name, docker_compose_path):
         :type docker_compose_path: docker compose to be used
     """
     test_user = get_or_create_user(user_name)
-    dataclaysrv(context, docker_compose_path, test_user.docker_network, "start")
+    dataclaysrv(context, docker_compose_path, test_user.docker_network, test_user.env_vars, "start")
     dataclaycmd(context, test_user.client_properties_path, test_user.docker_network, "WaitForDataClayToBeAlive 100 5")
     allure.attach.file(docker_compose_path, "docker-compose.yml", attachment_type=allure.attachment_type.TEXT)
 
@@ -456,4 +468,27 @@ def step_impl(context, user_name):
 @when('"{user_name}" stops "{docker_services}" docker services deployed using "{docker_compose_path}"')
 def step_impl(context, user_name, docker_services, docker_compose_path):
     test_user = get_or_create_user(user_name)
-    dockercompose(context, docker_compose_path, test_user.docker_network, f"stop {docker_services}")
+    dockercompose(context, docker_compose_path, test_user.docker_network, test_user.env_vars, f"stop {docker_services}")
+
+
+@given('"{user_name}" sets environment variable "{env_var_name}" to "{env_value}"')
+@then('"{user_name}" sets environment variable "{env_var_name}" to "{env_value}"')
+@when('"{user_name}" sets environment variable "{env_var_name}" to "{env_value}"')
+def step_impl(context, user_name, env_var_name, env_value):
+    test_user = get_or_create_user(user_name)
+    test_user.env_vars[env_var_name] = env_value
+
+@given('"{user_name}" gets id of "{obj_ref}" object into "{obj_var}" variable')
+@then('"{user_name}" gets id of "{obj_ref}" object into "{obj_var}" variable')
+@when('"{user_name}" gets id of "{obj_ref}" object into "{obj_var}" variable')
+def step_impl(context, user_name, obj_ref, obj_var):
+    test_user = get_or_create_user(user_name)
+    obj = test_user.user_objects[obj_ref]
+    test_user.user_objects[obj_var] = obj.get_object_id()
+
+@given('"{user_name}" waits {num_seconds} seconds')
+@then('"{user_name}" waits {num_seconds} seconds')
+@when('"{user_name}" waits {num_seconds} seconds')
+def step_impl(context, user_name, num_seconds):
+    import time
+    time.sleep(int(num_seconds))

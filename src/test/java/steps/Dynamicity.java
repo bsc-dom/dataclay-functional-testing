@@ -13,7 +13,7 @@ public class Dynamicity {
 	@Given("{string} starts extra nodes using {string}")
 	public void startsExtraNodesUsingDockerComposeExtra(String userName, String dockerComposePath) throws IOException {
 		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
-		Orchestrator.dockerComposeCommand(dockerComposePath, testUser.dockerNetwork, "up -d");
+		Orchestrator.dockerComposeCommand(dockerComposePath, testUser.dockerNetwork, testUser.envVars,"up -d");
 		Allure.attachment(dockerComposePath, Utils.readAllBytes(Paths.get(dockerComposePath)));
 	}
 

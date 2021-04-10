@@ -17,7 +17,7 @@ function test_feature {
     # Copy compiled files from container to allow docker-in-docker via socket
   if [[ $ENVIRONMENT == jdk* ]]; then
     CONTAINER_ID=$(docker create --platform $PLATFORM dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT)
-    docker cp $CONTAINER_ID:/testing/target $PWD/target
+    docker cp $CONTAINER_ID:/testing/target .
     docker rm $CONTAINER_ID
   fi
 

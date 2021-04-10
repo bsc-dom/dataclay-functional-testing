@@ -1,6 +1,8 @@
 package steps;
 
+import es.bsc.dataclay.DataClayObject;
 import es.bsc.dataclay.api.BackendID;
+import es.bsc.dataclay.api.DataClay;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -8,6 +10,7 @@ import io.cucumber.java.en.When;
 import model.People_Stub;
 import model.Person_Stub;
 
+import javax.xml.crypto.Data;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
@@ -33,5 +36,12 @@ public class GetByAliasSteps {
             exceptionRaised = true;
         }
         assertTrue(exceptionRaised);
+    }
+
+    @When("{string} deletes alias {string} from object {string}")
+    public void deletesAlias(String userName, String alias, String objRef) {
+        Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
+        DataClayObject obj = (DataClayObject) testUser.userObjects.get(objRef);
+        obj.deleteAlias();
     }
 }
