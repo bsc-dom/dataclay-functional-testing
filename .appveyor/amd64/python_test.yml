@@ -25,6 +25,7 @@ environment:
     - FEATURE: new-replica
     - FEATURE: new-version-consolidate
     - FEATURE: federation
+    - FEATURE: garbage-collection
 build_script:
   - |
     echo "Image = $APPVEYOR_BUILD_WORKER_IMAGE"
