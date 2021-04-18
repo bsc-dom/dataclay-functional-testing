@@ -8,7 +8,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     ports:
       - "12034:12034"
-    command: ""
+    command: "--debug"
     volumes:
       - type: bind
         source: /tmp/dataClay/functional-testing/storage/dynamicity
@@ -35,7 +35,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "3127:3127"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmodule
     volumes:
@@ -61,7 +61,7 @@ services:
 
   dspython:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
-    command: ""
+    command: "--debug"
     ports:
       - "6867:6867"
     depends_on:

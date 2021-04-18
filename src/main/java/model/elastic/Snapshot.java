@@ -52,7 +52,7 @@ public class Snapshot extends DataClayObject implements Snapshot_Stub {
 			DetectedObject_Stub obj = dkb.get_or_create(id_object, obj_class, x, y, w, h, this.timestamp);
 			// in Java it must be a long
 			long id_event = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-			Event_Stub event = (Event_Stub) new Event(id_event, obj, this.timestamp + i, vel_pred, yaw_pred, lon, lat);
+			Event_Stub event = (Event_Stub) new Event(id_event, obj, this.timestamp + i * 10L, vel_pred, yaw_pred, lon, lat);
 			obj.add_event(event);
 			if (!objects.containsKey(id_object)) {
 				this.objects.put(id_object, obj);

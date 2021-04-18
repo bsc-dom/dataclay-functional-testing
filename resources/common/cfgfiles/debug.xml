@@ -34,7 +34,7 @@
         <Logger name="StorageLocation" level="debug"/>
 
         <!-- Serialization -->
-        <Logger name="DataClaySerializationLib" level="off"/>
+        <Logger name="DataClaySerializationLib" level="debug"/>
         <Logger name="DataClayDeserializationLib" level="off"/>
         
         <!--  Logic module -->

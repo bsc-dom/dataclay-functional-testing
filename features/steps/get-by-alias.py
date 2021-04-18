@@ -1,6 +1,7 @@
 
 from steps.execution import call_method
 from steps.steps import *
+import traceback
 
 @then('"{user_name}" creates "{obj_from_alias_ref}" of class "{classname}" using alias "{alias}"')
 @given('"{user_name}" creates "{obj_from_alias_ref}" of class "{classname}" using alias "{alias}"')

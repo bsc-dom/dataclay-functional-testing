@@ -74,7 +74,21 @@ if [ "$BUILD_DATACLAY" == "true" ]; then
   fi
   popd
 fi
-./deploy.sh $DEPLOY_ARGS
+
+if [[ ! -z $IMAGE_TYPES ]] && [[ ! -z $ENVIRONMENTS_STR ]]; then
+  echo ./deploy.sh $DEPLOY_ARGS --image-types "$IMAGE_TYPES" --environments "$ENVIRONMENTS_STR"
+  ./deploy.sh $DEPLOY_ARGS --image-types "$IMAGE_TYPES" --environments "$ENVIRONMENTS_STR"
+elif [[ ! -z $IMAGE_TYPES ]] && [[ -z $ENVIRONMENTS_STR ]]; then
+  echo ./deploy.sh $DEPLOY_ARGS --image-types "$IMAGE_TYPES"
+  ./deploy.sh $DEPLOY_ARGS --image-types "$IMAGE_TYPES"
+elif [[ -z $IMAGE_TYPES ]] && [[ ! -z $ENVIRONMENTS_STR ]]; then
+  echo ./deploy.sh $DEPLOY_ARGS --environments "$ENVIRONMENTS_STR"
+  ./deploy.sh $DEPLOY_ARGS --environments "$ENVIRONMENTS_STR"
+else
+  echo ./deploy.sh $DEPLOY_DC_ARGS
+  ./deploy.sh $DEPLOY_DC_ARGS
+fi
+
 # Pull all images to test
 #    docker pull --platform $DEFAULT_ARCH dom-ci.bsc.es/$IMAGE_NAME
 #    docker tag dom-ci.bsc.es/$IMAGE_NAME $IMAGE_NAME

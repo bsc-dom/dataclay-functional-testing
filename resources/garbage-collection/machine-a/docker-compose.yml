@@ -8,7 +8,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     ports:
       - "12034:12034"
-    command: "--debug"
+    command: ""
     volumes:
       - type: bind
         source: /tmp/dataClay/functional-testing/storage/garbage-collection/machine-a
@@ -35,7 +35,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "3127:3127"
-    command: "--debug"
+    command: ""
     depends_on:
       - logicmoduleA
     volumes:
@@ -72,7 +72,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     ports:
       - "6867:6867"
-    command: "--debug"
+    command: ""
     depends_on:
       - logicmoduleA
       - dsjavaA
@@ -89,7 +89,7 @@ services:
       - MEMMGMT_PRESSURE_FRACTION=$MEMMGMT_PRESSURE_FRACTION
       - MEMMGMT_MIN_OBJECT_TIME=$MEMMGMT_MIN_OBJECT_TIME
       - MEMMGMT_EASE_FRACTION=$MEMMGMT_EASE_FRACTION
-      - LOGLEVEL=TRACE
+      #- LOGLEVEL=TRACE
     deploy:
       resources:
         limits:
@@ -107,7 +107,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "5127:5127"
-    command: "--debug"
+    command: ""
     depends_on:
       - logicmoduleA
     volumes:
@@ -144,7 +144,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     ports:
       - "8867:8867"
-    command: "--debug"
+    command: ""
     depends_on:
       - logicmoduleA
       - dsjavaA
@@ -161,7 +161,7 @@ services:
       - MEMMGMT_PRESSURE_FRACTION=$MEMMGMT_PRESSURE_FRACTION
       - MEMMGMT_MIN_OBJECT_TIME=$MEMMGMT_MIN_OBJECT_TIME
       - MEMMGMT_EASE_FRACTION=$MEMMGMT_EASE_FRACTION
-      - LOGLEVEL=TRACE
+      #- LOGLEVEL=TRACE
     deploy:
       resources:
         limits:

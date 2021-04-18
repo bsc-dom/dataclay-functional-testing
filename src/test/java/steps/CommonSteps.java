@@ -61,7 +61,7 @@ public class CommonSteps {
 		Allure.attachment("client.properties", Utils.readAllBytes(path));
 	}
 
-	@And("{string} deploys dataClay with docker-compose.yml file {string}")
+	@And(value = "{string} deploys dataClay with docker-compose.yml file {string}")
 	public void deploysDataClayWithDockerComposeYmlFile(String userName, String dockerComposePath) throws IOException {
 		Orchestrator.TestUser testUser = Orchestrator.getOrCreateTestUser(userName);
 		Orchestrator.startDataClay(dockerComposePath, testUser.dockerNetwork, testUser.envVars);

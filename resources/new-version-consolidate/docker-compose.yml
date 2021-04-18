@@ -11,7 +11,7 @@ services:
     command: ""
     volumes:
       - type: bind
-        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        source: /tmp/dataClay/functional-testing/storage/new-version-consolidate
         target: /dataclay/storage
     environment:
       - LOGICMODULE_PORT_TCP=12034
@@ -38,7 +38,7 @@ services:
     command: ""
     volumes:
       - type: bind
-        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        source: /tmp/dataClay/functional-testing/storage/new-version-consolidate
         target: /dataclay/storage
     depends_on:
       - logicmodule
@@ -66,7 +66,7 @@ services:
     command: ""
     volumes:
       - type: bind
-        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        source: /tmp/dataClay/functional-testing/storage/new-version-consolidate
         target: /dataclay/storage
     depends_on:
       - logicmodule
@@ -97,7 +97,7 @@ services:
       - dsjava
     volumes:
       - type: bind
-        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        source: /tmp/dataClay/functional-testing/storage/new-version-consolidate
         target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS1
@@ -125,7 +125,7 @@ services:
       - dsjava2
     volumes:
       - type: bind
-        source: /tmp/dataClay/functional-testing/functional-testing/storage/new-version-consolidate
+        source: /tmp/dataClay/functional-testing/storage/new-version-consolidate
         target: /dataclay/storage
     environment:
       - DATASERVICE_NAME=DS2

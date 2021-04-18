@@ -35,7 +35,6 @@ Feature: Federation
       And "UserC" imports models in namespace "test_namespace" from dataClay at hostname "logicmoduleB" and port 22034
       And "UserC" get stubs from namespace "test_namespace" into "stubs/userC" directory
 
-  @debugging
   Scenario: federates an object with alias
     Given "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
@@ -48,6 +47,7 @@ Feature: Federation
      Then "UserB" creates "obj_federated_obj" of class "Person" using alias "myobj"
       And "UserB" finishes the session
 
+  @debugging
   Scenario: unfederation of object with alias
     Given "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"

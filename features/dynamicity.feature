@@ -16,6 +16,7 @@ Feature: Dynamicity
   Scenario: add a node
     Given "UserA" starts extra nodes using "resources/dynamicity/docker-compose-extra.yml"
       And "UserA" waits until dataClay has 2 backends of "java" language
+      And "UserA" waits until dataClay has 2 backends of "python" language
       And "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
       And "UserA" runs make persistent for object "obj_person" with backend name = "DS1"
@@ -27,5 +28,3 @@ Feature: Dynamicity
       And "UserA" calls get all locations for object "obj_person" and check object is located in 2 locations
       And "UserA" calls get all locations for object "obj_person" and check object is located in "execid_DS2" location
       And "UserA" finishes the session
-      And "UserA" finishes the session
-   
