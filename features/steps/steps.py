@@ -71,6 +71,12 @@ def dockercompose(context, docker_compose_path, testing_network, env_vars, comma
     dockerimg, javadockerimg = get_docker_images_to_use(context)
     arch = context.config.userdata['arch']
     pwd = to_absolute_path_for_docker_volumes(context, "")
+    logicmodule_max_memory = context.config.userdata['logicmodule_max_memory']
+    logicmodule_min_memory = context.config.userdata['logicmodule_min_memory']
+    dsjava_max_memory = context.config.userdata['dsjava_max_memory']
+    dsjava_min_memory = context.config.userdata['dsjava_min_memory']
+    dspython_max_memory = context.config.userdata['dspython_max_memory']
+    dspython_min_memory = context.config.userdata['dspython_min_memory']
 
     env_vars_str = ""
     for key, value in env_vars.items():
@@ -78,7 +84,10 @@ def dockercompose(context, docker_compose_path, testing_network, env_vars, comma
 
     cmd = f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v {pwd}:{pwd} \
                 -e PYCLAY_IMAGE={dockerimg} -e JAVACLAY_IMAGE={javadockerimg} \
-                -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} {env_vars_str} \
+                -e IMAGE_PLATFORM={arch} -e TESTING_NETWORK={testing_network} \
+                -e LOGICMODULE_MAX_MEMORY={logicmodule_max_memory} -e LOGICMODULE_MIN_MEMORY={logicmodule_min_memory} \
+                -e DSJAVA_MAX_MEMORY={dsjava_max_memory} -e DSJAVA_MIN_MEMORY={dsjava_min_memory} \
+                -e DSPYTHON_MAX_MEMORY={dspython_max_memory} -e DSPYTHON_MIN_MEMORY={dspython_min_memory} {env_vars_str} \
                 -w={pwd} linuxserver/docker-compose -f {docker_compose_path} {command}"
     eprint(cmd)
     os.system(cmd)

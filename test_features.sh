@@ -16,6 +16,7 @@ function printError() { echo "${red}======== $1 ========${end}"; }
 function test_feature {
     # Copy compiled files from container to allow docker-in-docker via socket
   if [[ $ENVIRONMENT == jdk* ]]; then
+    echo "Copying target from dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT"
     CONTAINER_ID=$(docker create --platform $PLATFORM dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT)
     docker cp $CONTAINER_ID:/testing/target .
     docker rm $CONTAINER_ID
@@ -128,6 +129,12 @@ while test $# -gt 0; do
     CUCUMBER_OPTIONS=$1
     printWarn "Cucumber options provided: $CUCUMBER_OPTIONS"
     ;;
+  --debug-tag)
+    shift
+    DEBUG=True
+    DEBUG_TAG=$1
+    printWarn "Running tests with tag: $DEBUG_TAG"
+    ;;
   --test-pattern)
     shift
     TEST_PATTERN=$1
@@ -208,6 +215,15 @@ SECONDS=0
 
 for PLATFORM in "${PLATFORMS[@]}"; do
   for ENVIRONMENT in "${ENVIRONMENTS[@]}"; do
+
+      if [ ! -z ${DEBUG_TAG+x} ]; then
+        if [[ $ENVIRONMENT == jdk* ]]; then
+          CUCUMBER_OPTIONS="-Dcucumber.filter.tags=\"@${DEBUG_TAG}\""
+        else
+          CUCUMBER_OPTIONS="--tags=@${DEBUG_TAG}"
+        fi
+      fi
+
       for IMAGE_TYPE in "${IMAGE_TYPES[@]}"; do
         if [ "$IMAGE_TYPE" == "arm32" ] && [ "$PLATFORM" != "linux/arm/v7" ]; then
           printWarn "WARNING: Arm32 images can only use linux/arm/v7 platform, skipping"

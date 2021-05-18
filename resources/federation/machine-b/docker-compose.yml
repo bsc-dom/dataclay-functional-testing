@@ -8,7 +8,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     ports:
       - "22034:22034"
-    command: ""
+    command: "--debug"
     volumes:
       - type: bind
         source: /tmp/dataClay/functional-testing/storage/federation/machine-b
@@ -22,9 +22,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: $LOGICMODULE_MAX_MEMORY
         reservations:
-          memory: 50M
+          memory: $LOGICMODULE_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -50,9 +50,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSJAVA_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSJAVA_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -63,7 +63,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     ports:
       - "7867:7867"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleB
       - dsjavaB
@@ -79,9 +79,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSPYTHON_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSPYTHON_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -107,9 +107,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSJAVA_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSJAVA_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -120,7 +120,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     ports:
       - "8867:8867"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleB
       - dsjavaB
@@ -136,9 +136,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSPYTHON_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSPYTHON_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

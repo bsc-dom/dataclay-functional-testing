@@ -22,9 +22,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: $LOGICMODULE_MAX_MEMORY
         reservations:
-          memory: 50M
+          memory: $LOGICMODULE_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -50,9 +50,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: $DSJAVA_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSJAVA_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -78,9 +78,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: $DSPYTHON_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSPYTHON_MAX_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

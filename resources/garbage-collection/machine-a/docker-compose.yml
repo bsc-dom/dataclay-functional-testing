@@ -8,7 +8,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/logicmodule:${JAVACLAY_IMAGE}"
     ports:
       - "12034:12034"
-    command: ""
+    command: "--debug"
     volumes:
       - type: bind
         source: /tmp/dataClay/functional-testing/storage/garbage-collection/machine-a
@@ -22,9 +22,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: $LOGICMODULE_MAX_MEMORY
         reservations:
-          memory: 50M
+          memory: $LOGICMODULE_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -35,7 +35,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "3127:3127"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleA
     volumes:
@@ -59,9 +59,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSJAVA_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSJAVA_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
        interval: 5s
@@ -72,7 +72,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     ports:
       - "6867:6867"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleA
       - dsjavaA
@@ -93,9 +93,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSPYTHON_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSPYTHON_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -107,7 +107,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dsjava:${JAVACLAY_IMAGE}"
     ports:
       - "5127:5127"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleA
     volumes:
@@ -131,9 +131,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSJAVA_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSJAVA_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s
@@ -144,7 +144,7 @@ services:
     image: "dom-ci.bsc.es/bscdataclay/dspython:${PYCLAY_IMAGE}"
     ports:
       - "8867:8867"
-    command: ""
+    command: "--debug"
     depends_on:
       - logicmoduleA
       - dsjavaA
@@ -165,9 +165,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: $DSPYTHON_MAX_MEMORY
         reservations:
-          memory: 30M
+          memory: $DSPYTHON_MIN_MEMORY
     stop_grace_period: 5m
     healthcheck:
       interval: 5s

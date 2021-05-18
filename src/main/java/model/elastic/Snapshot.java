@@ -5,79 +5,58 @@ import es.bsc.dataclay.DataClayObject;
 import java.util.*;
 
 public class Snapshot extends DataClayObject implements Snapshot_Stub {
-	private List<String> objects_refs;
-	private Map<String, DetectedObject_Stub> objects;
+	private List<Event_Stub> events;
 	private String snap_alias;
-	private long timestamp = 0L;
+	private int timestamp = 0;
 
 	public Snapshot(final String alias) {
-		objects = new HashMap<>();
+		events = new ArrayList<>();
 		this.snap_alias = alias;
-		this.timestamp = 0L;
+		this.timestamp = 0;
 	}
 
 	@Override
-	public void add_object(DetectedObject_Stub newObject) {
-		objects.put(newObject.get_id_object(), newObject);
+	public void add_event(Event_Stub newEvent) {
+		events.add(newEvent);
 	}
 
 	@Override
-	public void set_timestamp(long timestamp) {
+	public void set_timestamp(int timestamp) {
 		this.timestamp = timestamp;
 	}
 
 	@Override
-	public long get_timestamp() {
+	public int get_timestamp() {
 		return this.timestamp;
 	}
 
 	@Override
-	public void add_object_refs(String objRef) {
-		objects_refs.add(objRef);
-	}
-
-	@Override
-	public Map<String, DetectedObject_Stub> get_objects() {
-		return this.objects;
-	}
-
-	@Override
-	public void add_events_from_trackers(final int numEventsPerObject, final String id_object,
+	public void add_events_from_trackers(final Integer numEventsPerObject, final String id_object,
 									     final String obj_class,
-										 final int x, final int y, final int w, final int h,
-										 final float vel_pred, final float yaw_pred,
-									     final float lon, final float lat,
+										 final Integer x, final Integer y, final Integer w, final Integer h,
+										 final Float vel_pred, final Float yaw_pred,
+									     final Float lon, final Float lat,
 									  final DKB_Stub dkb) {
 		for (int i = 0; i < numEventsPerObject; ++i) {
 			DetectedObject_Stub obj = dkb.get_or_create(id_object, obj_class, x, y, w, h, this.timestamp);
 			// in Java it must be a long
 			long id_event = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-			Event_Stub event = (Event_Stub) new Event(id_event, obj, this.timestamp + i * 10L, vel_pred, yaw_pred, lon, lat);
+			Event_Stub event = (Event_Stub) new Event(id_event, obj, this.timestamp + i * 10,
+					vel_pred, yaw_pred, lon, lat);
 			obj.add_event(event);
-			if (!objects.containsKey(id_object)) {
-				this.objects.put(id_object, obj);
-			}
+			this.add_event(event);
 
 		}
 	}
 
 	@Override
-	public void delete(DKB_Stub dkb) {
+	public void delete(boolean unfederateObjects) {
 		// unfederate
-		this.unfederate(true);
-		dkb.remove_events_snapshot(this.timestamp);
+		if (unfederateObjects) {
+			this.unfederate(true);
+		}
+		this.events.clear();
 		this.sessionDetach();
-	}
-
-	@Override
-	public void whenUnfederated() {
-		/**try {
-			DKB_Stub dkb = DKB.getByAliasExt("DKB");
-			dkb.remove_events_snapshot(this.timestamp);
-		} catch (Exception e) {
-			e.printStackTrace();
-
-		}**/
 	}
 
 	@Override
@@ -86,6 +65,11 @@ public class Snapshot extends DataClayObject implements Snapshot_Stub {
 			// 			DKB_Stub dkb = (DKB_Stub) DKB.getByAliasExt(DKB.getMetaClassID("test_namespace.model.elastic.DKB"), "DKB", true);
 			DKB_Stub dkb = (DKB_Stub) DKB.getByAliasExt("DKB");
 			dkb.add_events_snapshot(this);
+			for (Event_Stub event : this.events) {
+				DetectedObject_Stub obj = event.get_detected_object();
+				obj.add_event(event);
+				dkb.add_object(obj);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();

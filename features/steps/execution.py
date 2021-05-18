@@ -91,6 +91,10 @@ def call_method(test_user, classname, module, method_name, theparams, instance_s
                 actual_args[key] = test_user.user_objects[cur_arg]
             elif cur_arg.startswith("execid_"):
                 actual_args[key] = test_user.user_objects[cur_arg]
+            elif cur_arg == "True":
+                actual_args[key] = True
+            elif cur_arg == "False":
+                actual_args[key] = False
             elif key in hints and param_type != hints[key]:
                 # cast string to type
                 hint_type = hints[key]

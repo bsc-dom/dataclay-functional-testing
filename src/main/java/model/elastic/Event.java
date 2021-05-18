@@ -5,17 +5,17 @@ import es.bsc.dataclay.DataClayObject;
 public class Event extends DataClayObject implements Event_Stub {
 	private long id_event;
 	private DetectedObject_Stub detected_object;
-	private long timestamp;
+	private int timestamp;
 	private float speed;
 	private float yaw;
 	private float longitude_pos;
 	private float latitude_pos;
 
-	public Event(final long id_event, DetectedObject_Stub newdetectedObject, final long timestamp,
+	public Event(final long id_event, DetectedObject_Stub newdetectedObject, final int timestamp,
 				 final float speed, final float yaw, final float longitude_pos,
 				 final float latitude_pos) {
 		this.id_event= id_event;
-		//this.detected_object = newdetectedObject;
+		this.detected_object = newdetectedObject;
 		this.timestamp = timestamp;
 		this.speed = speed;
 		this.yaw = yaw;
@@ -24,7 +24,7 @@ public class Event extends DataClayObject implements Event_Stub {
 	}
 
 	@Override
-	public long get_timestamp() {
+	public int get_timestamp() {
 		return this.timestamp;
 	}
 

@@ -245,6 +245,12 @@ public class Orchestrator {
 		String pythonDockerImage = dockerTags.getSecond();
 		String pwd = System.getProperty("host_pwd");
 		String archImage = System.getProperty("arch", "");
+		String logicmoduleMaxMem = System.getProperty("logicmodule_max_memory");
+		String logicmoduleMinMem = System.getProperty("logicmodule_min_memory");
+		String dsjavaMaxMem = System.getProperty("dsjava_max_memory");
+		String dsjavaMinMem = System.getProperty("dsjava_min_memory");
+		String dspythonMaxMem = System.getProperty("dspython_max_memory");
+		String dspythonMinMem = System.getProperty("dspython_min_memory");
 		String userEnvVars = "";
 		for (Map.Entry<String, String> curEnv : envVars.entrySet()) {
 			userEnvVars = userEnvVars + " -e " + curEnv.getKey() + "=" + curEnv.getValue();
@@ -253,7 +259,11 @@ public class Orchestrator {
 
 		String dockerComposeCmd = "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v " + pwd + ":" + pwd
 				+ " -e PYCLAY_IMAGE=" + pythonDockerImage + " -e JAVACLAY_IMAGE=" + javaDockerImage
-				+ " -e IMAGE_PLATFORM=" + archImage + " -e TESTING_NETWORK=" + testNetwork + userEnvVars
+				+ " -e IMAGE_PLATFORM=" + archImage + " -e TESTING_NETWORK=" + testNetwork
+				+ " -e LOGICMODULE_MAX_MEMORY=" + logicmoduleMaxMem + " -e LOGICMODULE_MIN_MEMORY=" + logicmoduleMinMem
+				+ " -e DSJAVA_MAX_MEMORY=" + dsjavaMaxMem + " -e DSJAVA_MIN_MEMORY=" + dsjavaMinMem
+				+ " -e DSPYTHON_MAX_MEMORY=" + dspythonMaxMem + " -e DSPYTHON_MIN_MEMORY=" + dspythonMinMem
+				+ userEnvVars
 				+ " -w=" + pwd + " linuxserver/docker-compose -f " +  dockerFilePath + " " + command;
 		System.err.println(dockerComposeCmd);
 		runProcess(dockerComposeCmd, null);

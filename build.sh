@@ -85,8 +85,8 @@ elif [[ -z $IMAGE_TYPES ]] && [[ ! -z $ENVIRONMENTS_STR ]]; then
   echo ./deploy.sh $DEPLOY_ARGS --environments "$ENVIRONMENTS_STR"
   ./deploy.sh $DEPLOY_ARGS --environments "$ENVIRONMENTS_STR"
 else
-  echo ./deploy.sh $DEPLOY_DC_ARGS
-  ./deploy.sh $DEPLOY_DC_ARGS
+  echo ./deploy.sh $DEPLOY_ARGS
+  ./deploy.sh $DEPLOY_ARGS
 fi
 
 # Pull all images to test

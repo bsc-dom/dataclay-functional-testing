@@ -11,7 +11,7 @@ Feature: Garbage Collection
       And "UserA" sets environment variable "GLOBALGC_MAX_OBJECTS_TO_COLLECT_ITERATION" to "1000"
       And "UserA" sets environment variable "MEMMGMT_CHECK_TIME_INTERVAL" to "1000"
       And "UserA" sets environment variable "MEMMGMT_PRESSURE_FRACTION" to "0.0"
-      And "UserA" sets environment variable "MEMMGMT_MIN_OBJECT_TIME" to "200"
+      And "UserA" sets environment variable "MEMMGMT_MIN_OBJECT_TIME" to "500"
       And "UserA" sets environment variable "MEMMGMT_EASE_FRACTION" to "0.0"
       And "UserA" deploys dataClay with docker-compose.yml file "resources/garbage-collection/machine-a/docker-compose.yml"
       And "UserA" waits until dataClay has 2 backends of "java" language
@@ -109,7 +109,6 @@ Feature: Garbage Collection
       And "UserA" checks that object with id "oid_b" does not exist in dataClay
       And "UserA" finishes the session
 
-  @debugging
   Scenario: collect unreferenced cyclic objects
     Given "UserA" starts a new session
       And "UserA" creates "obj_a" object of class "NodeA"
@@ -182,7 +181,7 @@ Feature: Garbage Collection
       And "UserB" sets environment variable "GLOBALGC_MAX_OBJECTS_TO_COLLECT_ITERATION" to "1000"
       And "UserB" sets environment variable "MEMMGMT_CHECK_TIME_INTERVAL" to "1000"
       And "UserB" sets environment variable "MEMMGMT_PRESSURE_FRACTION" to "0.0"
-      And "UserB" sets environment variable "MEMMGMT_MIN_OBJECT_TIME" to "200"
+      And "UserB" sets environment variable "MEMMGMT_MIN_OBJECT_TIME" to "500"
       And "UserB" sets environment variable "MEMMGMT_EASE_FRACTION" to "0.0"
       And "UserB" deploys dataClay with docker-compose.yml file "resources/garbage-collection/machine-b/docker-compose.yml"
       And "UserB" waits until dataClay has 1 backends of "java" language
@@ -210,6 +209,7 @@ Feature: Garbage Collection
       And "UserB" checks that object with id "oid_person" does not exist in dataClay
       And "UserB" finishes the session
 
+  @debugging
   Scenario: collect detached unreferenced cyclic objects in distributed environment
     Given "UserB" has a configuration file "resources/garbage-collection/machine-b/cfgfiles/client.properties" to be used to connect to dataClay
       And "UserB" has a session file "resources/garbage-collection/machine-b/cfgfiles/session.properties" to be used in test application
@@ -221,7 +221,7 @@ Feature: Garbage Collection
       And "UserB" sets environment variable "GLOBALGC_MAX_OBJECTS_TO_COLLECT_ITERATION" to "1000"
       And "UserB" sets environment variable "MEMMGMT_CHECK_TIME_INTERVAL" to "1000"
       And "UserB" sets environment variable "MEMMGMT_PRESSURE_FRACTION" to "0.0"
-      And "UserB" sets environment variable "MEMMGMT_MIN_OBJECT_TIME" to "200"
+      And "UserB" sets environment variable "MEMMGMT_MIN_OBJECT_TIME" to "100"
       And "UserB" sets environment variable "MEMMGMT_EASE_FRACTION" to "0.0"
       And "UserB" deploys dataClay with docker-compose.yml file "resources/garbage-collection/machine-b/docker-compose.yml"
       And "UserB" waits until dataClay has 1 backends of "java" language
@@ -247,26 +247,26 @@ Feature: Garbage Collection
       And "UserA" gets ID of external dataClay at hostname "logicmoduleB" and port 22034 into "dataclayid_B" variable
       # create snapshot
       And "UserA" creates "obj_snapshot_begin" object of class "elastic.Snapshot" with constructor params "snapshot_0"
-      And "UserA" runs make persistent for object "obj_snapshot_begin" with backend name = "DS2"
+      # TODO: create snapshot in DS2 for distribute events (DS2 with snapshot) and objects (DS1 with DKB)
+      And "UserA" runs make persistent for object "obj_snapshot_begin" with backend name = "DS1"
       And "UserA" runs "add_events_snapshot" method with params "obj_snapshot_begin" in object "obj_dkb_a"
-      And "UserA" runs "add_events_from_trackers" method with params "2 car_oid car 10 5 0 0 50 20 33.2 44.1 obj_dkb_a" in object "obj_snapshot_begin"
+      And "UserA" runs "add_events_from_trackers" method with params "2 car_oid car 10 5 0 0 50.3 20.2 33.2 44.1 obj_dkb_a" in object "obj_snapshot_begin"
       # wait to check number of objects to avoid checking it while objects are being flushed: dkb, list, snapshot, 2 events, 1 object = 6 objs
       And "UserA" waits 60 seconds
-      And "UserA" checks that number of objects in dataClay is 6
+      And "UserA" checks that number of objects in dataClay is 5
       # federate snapshot
       And "UserA" federates "obj_snapshot_begin" object to dataClay with ID "dataclayid_B"
-      # delete snapshot
-      And "UserA" runs "delete" method with params "obj_dkb_a" in object "obj_snapshot_begin"
-      And "UserA" waits 60 seconds
-      And "UserA" checks that number of objects in dataClay is 5
-      # remove old objects
-      And "UserA" runs "remove_old_objects" method with params "100" in object "obj_dkb_a"
+      # remove old objects and snapshot
+      And "UserA" runs "remove_old_objects_and_snapshots" method with params "100 True" in object "obj_dkb_a"
       And "UserA" waits 120 seconds
-      And "UserA" checks that number of objects in dataClay is 2
+      And "UserA" checks that number of objects in dataClay is 1
       And "UserA" finishes the session
       # check objects were federated
       And "UserB" starts a new session
-      And "UserB" checks that number of objects in dataClay is 6
+      And "UserB" checks that number of objects in dataClay is 5
+      And "UserB" runs "remove_old_objects_and_snapshots" method with params "100 False" in object "obj_dkb_b"
+      And "UserB" waits 120 seconds
+      And "UserB" checks that number of objects in dataClay is 1
       And "UserB" finishes the session
 
   #Scenario: collect versions after consolidate

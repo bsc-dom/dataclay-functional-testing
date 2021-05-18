@@ -187,6 +187,13 @@ public class StubsClassLoader {
 			// get by ref
 			return (DataClayInstanceID) Orchestrator.userContext.userObjects.get(objectToCast);
 		}
+		if (objectToCast.equals("True")) {
+			return true;
+		}
+		if (objectToCast.equals("False")) {
+			// get by ref
+			return false;
+		}
 		if (classType.equals(String.class)) {
 			castObject = objectToCast;
 		} else if (classType.equals(Integer.class)) {
