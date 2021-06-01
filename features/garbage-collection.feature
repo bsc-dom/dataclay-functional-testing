@@ -209,7 +209,6 @@ Feature: Garbage Collection
       And "UserB" checks that object with id "oid_person" does not exist in dataClay
       And "UserB" finishes the session
 
-  @debugging
   Scenario: collect detached unreferenced cyclic objects in distributed environment
     Given "UserB" has a configuration file "resources/garbage-collection/machine-b/cfgfiles/client.properties" to be used to connect to dataClay
       And "UserB" has a session file "resources/garbage-collection/machine-b/cfgfiles/session.properties" to be used in test application
