@@ -43,7 +43,6 @@ Feature: New replica
       And "UserA" runs "replicaSourceIs" method with params "execid_DS1" in object "obj_person" and checks that result is "True"
       And "UserA" finishes the session
 
-  @debugging
   Scenario: replica from replica
     Given "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
@@ -68,6 +67,7 @@ Feature: New replica
       And "UserA" runs "replicaSourceIs" method with params "execid_DS2" in object "obj_person" and checks that result is "True"
       And "UserA" finishes the session
 
+  @debugging
   Scenario: replica recursiveness
     Given "UserA" starts a new session
       And "UserA" creates "obj_person" object of class "Person" with constructor params "Bob 33"
