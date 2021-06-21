@@ -26,6 +26,7 @@ environment:
     - FEATURE: new-version-consolidate
     - FEATURE: federation
     - FEATURE: garbage-collection
+    - FEATURE: object-store
 build_script:
   - |
     echo "Image = $APPVEYOR_BUILD_WORKER_IMAGE"
