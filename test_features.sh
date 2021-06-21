@@ -48,8 +48,23 @@ function test_feature {
     -v $PWD/stubs:/testing/stubs:rw \
     dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT $TEST $ENVIRONMENT $PLATFORM $IMAGE_TYPE \"$CUCUMBER_OPTIONS\""
   echo $COMMAND
-  eval $COMMAND
-  RESULT=$?
+  n=0
+  until [ "$n" -ge 2 ]
+  do
+     # time out 3 hours and retry
+     timeout 10800 bash -c "$COMMAND"
+     RESULT=$?
+     # Retry if timed out
+     if [[ $RESULT == 124 ]]; then
+       # clean previous tests
+       docker rm -f $(docker ps | grep dom-ci | awk '{print $1}')
+       # wait for sockets to close
+       sleep 120
+     else
+       break
+     fi
+     n=$((n+1))
+  done
   docker network rm dataclay-testing-network
   return $RESULT
 }
