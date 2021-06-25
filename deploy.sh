@@ -149,7 +149,7 @@ DOCKER_BUILDX_COMMAND="buildx"
 source ./BUILD_MATRIX.txt
 
 LOCAL=false
-DEPLOY_BASE=false
+DEPLOY_BASE=true
 
 while test $# -gt 0; do
   case "$1" in
@@ -160,9 +160,6 @@ while test $# -gt 0; do
     DOCKER_COMMAND=""
     PLATFORMS=(linux/amd64)
     printWarn "Build in local docker"
-    ;;
-  --deploy-base)
-    DEPLOY_BASE=true
     ;;
   --skip-base)
     DEPLOY_BASE=false

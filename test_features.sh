@@ -31,7 +31,20 @@ function test_feature {
   done
   popd
 
-
+  LOGICMODULE_MAX_MEMORY=400M
+  LOGICMODULE_MIN_MEMORY=50M
+  DSJAVA_MAX_MEMORY=250M
+  DSJAVA_MIN_MEMORY=30M
+  DSPYTHON_MAX_MEMORY=200M
+  DSPYTHON_MIN_MEMORY=30M
+  if [[ $ENVIRONMENT == jdk* ]]; then
+    LANGUAGE="java"
+    DSJAVA_MAX_MEMORY=350M
+  elif [[ $ENVIRONMENT == py* ]]; then
+    DSPYTHON_MAX_MEMORY=300M
+    LANGUAGE="python"
+  fi
+  mkdir -p $PWD/failed_tests/$TEST/$IMAGE_TYPE/$ENVIRONMENT
   set +e
   docker network create dataclay-testing-network
   COMMAND="docker run --rm --platform $PLATFORM \
@@ -40,12 +53,19 @@ function test_feature {
     -e HOST_USER_ID=$(id -u) \
     -e HOST_GROUP_ID=$(id -g) \
     -e DEBUG=$DEBUG \
+    -e LOGICMODULE_MAX_MEMORY=$LOGICMODULE_MAX_MEMORY \
+    -e LOGICMODULE_MIN_MEMORY=$LOGICMODULE_MIN_MEMORY \
+    -e DSJAVA_MAX_MEMORY=$DSJAVA_MAX_MEMORY \
+    -e DSJAVA_MIN_MEMORY=$DSJAVA_MIN_MEMORY \
+    -e DSPYTHON_MAX_MEMORY=$DSPYTHON_MAX_MEMORY \
+    -e DSPYTHON_MIN_MEMORY=$DSPYTHON_MIN_MEMORY \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp/dataClay/functional-testing/storage/:/testing/storage:rw \
     -v $PWD/resources:/testing/resources:ro \
     -v $PWD/features:/testing/features:ro \
     -v $PWD/allure-results:/testing/allure-results:rw \
     -v $PWD/stubs:/testing/stubs:rw \
+    -v $PWD/failed_tests/$TEST/$IMAGE_TYPE/$ENVIRONMENT:/failed_tests/:rw \
     dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT $TEST $ENVIRONMENT $PLATFORM $IMAGE_TYPE \"$CUCUMBER_OPTIONS\""
   echo $COMMAND
   n=0
@@ -54,6 +74,7 @@ function test_feature {
      # time out 3 hours and retry
      timeout 10800 bash -c "$COMMAND"
      RESULT=$?
+
      # Retry if timed out
      if [[ $RESULT == 124 ]]; then
        # clean previous tests

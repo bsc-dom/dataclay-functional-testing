@@ -7,6 +7,7 @@ import es.bsc.dataclay.api.DataClayException;
 import es.bsc.dataclay.util.ids.ExecutionEnvironmentID;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -38,7 +39,12 @@ public class CommonSteps {
 	}
 
 	@After
-	public void afterScenario() {
+	public void afterScenario(Scenario scenario) {
+		if (scenario.isFailed()) {
+			String command = "/bin/bash resources/utils/dump_logs.sh";
+			System.out.println(command);
+			Orchestrator.runProcess(command, null);
+		}
 		Orchestrator.cleanScenario();
 	}
 
