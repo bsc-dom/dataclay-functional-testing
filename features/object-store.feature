@@ -1,4 +1,4 @@
-Feature: Make persistent
+Feature: Object Store
 
   Background: dataClay deployment
     Given "UserA" has a configuration file "resources/common/cfgfiles/client.properties" to be used to connect to dataClay
