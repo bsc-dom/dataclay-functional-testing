@@ -1,4 +1,4 @@
-version: 2.6.dev.build{build}
+version: pyclay.functesting.amd64.build{build}
 build_cloud: bsccsdomci01
 branches:
   only:
