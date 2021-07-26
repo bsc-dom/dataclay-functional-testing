@@ -149,7 +149,7 @@ DOCKER_BUILDX_COMMAND="buildx"
 source ./BUILD_MATRIX.txt
 
 LOCAL=false
-DEPLOY_BASE=true
+DEPLOY_BASE=false
 
 while test $# -gt 0; do
   case "$1" in
@@ -161,8 +161,8 @@ while test $# -gt 0; do
     PLATFORMS=(linux/amd64)
     printWarn "Build in local docker"
     ;;
-  --skip-base)
-    DEPLOY_BASE=false
+  --deploy-base)
+    DEPLOY_BASE=true
     ;;
   --image-types)
     shift
@@ -216,7 +216,7 @@ PLATFORMS_ARG="${PLATFORMS_ARG%,}"
 
 if [ $DEPLOY_BASE == true ]; then
   for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
-    deploy_testing_image dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT-base base.Dockerfile
+    deploy_testing_image dom-ci.bsc.es/bscdataclay/continuous-integration-base:$ENVIRONMENT base.Dockerfile
   done
 fi
 

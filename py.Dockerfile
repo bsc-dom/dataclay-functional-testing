@@ -1,7 +1,7 @@
 ARG ENVIRONMENT
 ARG IMAGE_DC
 FROM dom-ci.bsc.es/bscdataclay/dspython:develop.${ENVIRONMENT}-slim as pyclay-venv
-FROM dom-ci.bsc.es/bscdataclay/continuous-integration:testing-${ENVIRONMENT}-base
+FROM dom-ci.bsc.es/bscdataclay/continuous-integration-base:${ENVIRONMENT}
 # Get pyClay
 ENV DATACLAY_VIRTUAL_ENV=/home/dataclayusr/dataclay/dataclay_venv
 COPY --from=pyclay-venv /home/dataclayusr/dataclay/dataclay_venv ${DATACLAY_VIRTUAL_ENV}
