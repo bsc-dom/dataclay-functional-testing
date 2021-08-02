@@ -30,11 +30,11 @@ Feature: Garbage Collection
       And "UserA" gets id of "obj_a" object into "oid_a" variable
       And "UserA" checks that object with id "oid_a" exists in dataClay
       # wait to check number of objects to avoid checking it while objects are being flushed
-      And "UserA" waits 100 seconds
+      And "UserA" waits 30 seconds
       And "UserA" checks that number of objects in dataClay is 1
      When "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 30 seconds
       And "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" checks that number of objects in dataClay is 0
       And "UserA" finishes the session
@@ -64,12 +64,12 @@ Feature: Garbage Collection
       And "UserA" gets id of "obj_a" object into "oid_a" variable
       And "UserA" finishes the session
       And "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 30 seconds
       And "UserA" checks that object with id "oid_a" exists in dataClay
      When "UserA" deletes alias "myobj" from object "obj_a"
       And "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 30 seconds
       And "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" finishes the session
 
@@ -83,7 +83,7 @@ Feature: Garbage Collection
       And "UserA" gets id of "obj_b" object into "oid_b" variable
       And "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 60 seconds
       And "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" checks that object with id "oid_b" does not exist in dataClay
       And "UserA" finishes the session
@@ -98,13 +98,13 @@ Feature: Garbage Collection
       And "UserA" gets id of "obj_b" object into "oid_b" variable
       And "UserA" finishes the session
       And "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 60 seconds
       And "UserA" checks that object with id "oid_a" exists in dataClay
       And "UserA" checks that object with id "oid_b" exists in dataClay
       And "UserA" runs "setNodeB" method with params "null" in object "obj_a"
       And "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 60 seconds
       And "UserA" checks that object with id "oid_a" exists in dataClay
       And "UserA" checks that object with id "oid_b" does not exist in dataClay
       And "UserA" finishes the session
@@ -120,7 +120,7 @@ Feature: Garbage Collection
       And "UserA" gets id of "obj_b" object into "oid_b" variable
       And "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 60 seconds
       And "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" checks that object with id "oid_b" does not exist in dataClay
       And "UserA" finishes the session
@@ -129,44 +129,44 @@ Feature: Garbage Collection
     Given "UserA" starts a new session
       And "UserA" creates "obj_a" object of class "NodeA"
       And "UserA" creates "obj_b" object of class "NodeB"
-      #And "UserA" creates "obj_a_cycle" object of class "NodeA"
-      #And "UserA" creates "obj_b_cycle" object of class "NodeB"
+      And "UserA" creates "obj_a_cycle" object of class "NodeA"
+      And "UserA" creates "obj_b_cycle" object of class "NodeB"
       And "UserA" creates "obj_a_retained" object of class "NodeA"
       And "UserA" creates "obj_b_retained" object of class "NodeB"
       And "UserA" runs make persistent for object "obj_a" with backend name = "DS1"
       And "UserA" runs make persistent for object "obj_b" with backend name = "DS2"
-      #And "UserA" runs make persistent for object "obj_a_cycle" with backend name = "DS1"
-      #And "UserA" runs make persistent for object "obj_b_cycle" with backend name = "DS2"
+      And "UserA" runs make persistent for object "obj_a_cycle" with backend name = "DS1"
+      And "UserA" runs make persistent for object "obj_b_cycle" with backend name = "DS2"
       And "UserA" runs make persistent for object "obj_a_retained" with alias = "myobja", backend name = "DS1" and recursive = "True"
       And "UserA" runs make persistent for object "obj_b_retained" with backend name = "DS2"
       And "UserA" runs "setNodeB" method with params "obj_b" in object "obj_a"
-      #And "UserA" runs "setNodeB" method with params "obj_b_cycle" in object "obj_a_cycle"
+      And "UserA" runs "setNodeB" method with params "obj_b_cycle" in object "obj_a_cycle"
       And "UserA" runs "setNodeB" method with params "obj_b_retained" in object "obj_a_retained"
-      #And "UserA" runs "setNodeA" method with params "obj_a_cycle" in object "obj_b_cycle"
+      And "UserA" runs "setNodeA" method with params "obj_a_cycle" in object "obj_b_cycle"
       And "UserA" gets id of "obj_a" object into "oid_a" variable
       And "UserA" gets id of "obj_b" object into "oid_b" variable
-      #And "UserA" gets id of "obj_a_cycle" object into "oid_a_cycle" variable
-      #And "UserA" gets id of "obj_b_cycle" object into "oid_b_cycle" variable
+      And "UserA" gets id of "obj_a_cycle" object into "oid_a_cycle" variable
+      And "UserA" gets id of "obj_b_cycle" object into "oid_b_cycle" variable
       And "UserA" gets id of "obj_a_retained" object into "oid_a_retained" variable
       And "UserA" gets id of "obj_b_retained" object into "oid_b_retained" variable
       And "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 60 seconds
       And "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" checks that object with id "oid_b" does not exist in dataClay
-      #And "UserA" checks that object with id "oid_a_cycle" does not exist in dataClay
-      #And "UserA" checks that object with id "oid_b_cycle" does not exist in dataClay
+      And "UserA" checks that object with id "oid_a_cycle" does not exist in dataClay
+      And "UserA" checks that object with id "oid_b_cycle" does not exist in dataClay
       And "UserA" checks that object with id "oid_a_retained" exists in dataClay
       And "UserA" checks that object with id "oid_b_retained" exists in dataClay
       And "UserA" finishes the session
 
-  Scenario: collect an object using user hint
+  Scenario: collect an object detached from session
     Given "UserA" starts a new session
       And "UserA" creates "obj_a" object of class "NodeA"
       And "UserA" runs make persistent for object "obj_a"
       And "UserA" gets id of "obj_a" object into "oid_a" variable
      When "UserA" detaches object "obj_a" from session
-      And "UserA" waits 100 seconds
+      And "UserA" waits 40 seconds
      Then "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" finishes the session
 
@@ -200,12 +200,12 @@ Feature: Garbage Collection
       And "UserB" federates "obj_person" object to dataClay with ID "dataclayid_A"
       And "UserB" finishes the session
       And "UserB" starts a new session
-      And "UserB" waits 100 seconds
+      And "UserB" waits 60 seconds
       And "UserB" checks that object with id "oid_person" exists in dataClay
      When "UserB" unfederates "obj_person" object with dataClay with ID "dataclayid_A"
       And "UserB" finishes the session
       And "UserB" starts a new session
-      And "UserB" waits 100 seconds
+      And "UserB" waits 60 seconds
       And "UserB" checks that object with id "oid_person" does not exist in dataClay
       And "UserB" finishes the session
 
@@ -252,20 +252,20 @@ Feature: Garbage Collection
       And "UserA" runs "add_events_snapshot" method with params "obj_snapshot_begin" in object "obj_dkb_a"
       And "UserA" runs "add_events_from_trackers" method with params "2 car_oid car 10 5 0 0 50.3 20.2 33.2 44.1 obj_dkb_a" in object "obj_snapshot_begin"
       # wait to check number of objects to avoid checking it while objects are being flushed: dkb, list, snapshot, 2 events, 1 object = 6 objs
-      And "UserA" waits 100 seconds
+      And "UserA" waits 50 seconds
       And "UserA" checks that number of objects in dataClay is 5
       # federate snapshot
       And "UserA" federates "obj_snapshot_begin" object to dataClay with ID "dataclayid_B"
       # remove old objects and snapshot
       And "UserA" runs "remove_old_objects_and_snapshots" method with params "100 True" in object "obj_dkb_a"
-      And "UserA" waits 150 seconds
+      And "UserA" waits 100 seconds
       And "UserA" checks that number of objects in dataClay is 1
       And "UserA" finishes the session
       # check objects were federated
       And "UserB" starts a new session
       And "UserB" checks that number of objects in dataClay is 5
       And "UserB" runs "remove_old_objects_and_snapshots" method with params "100 False" in object "obj_dkb_b"
-      And "UserB" waits 150 seconds
+      And "UserB" waits 100 seconds
       And "UserB" checks that number of objects in dataClay is 1
       And "UserB" finishes the session
 

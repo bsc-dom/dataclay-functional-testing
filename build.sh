@@ -17,7 +17,7 @@ if [ "$#" -lt 1 ]; then
 fi
 DATACLAY_PACKAGING_PATH=$1
 BUILD_DATACLAY="true"
-DEPLOY_ARGS="--build --deploy-base"
+DEPLOY_ARGS="--build"
 DEPLOY_DC_ARGS=""
 SLIM_ADDED=false
 shift
