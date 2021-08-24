@@ -218,13 +218,13 @@ if [ $DEPLOY_BASE == true ]; then
   for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
     deploy_testing_image dom-ci.bsc.es/bscdataclay/continuous-integration-base:$ENVIRONMENT base.Dockerfile
   done
+else
+  for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
+    deploy_testing_image dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile
+  done
+  rm -rf $PWD/testing-target
+  rm -f $PWD/dataclay.jar
 fi
-
-for ENVIRONMENT in ${ENVIRONMENTS[@]}; do
-  deploy_testing_image dom-ci.bsc.es/bscdataclay/continuous-integration:testing-$ENVIRONMENT Dockerfile
-done
-rm -rf $PWD/testing-target
-rm -f $PWD/dataclay.jar
 
 duration=$SECONDS
 echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."
