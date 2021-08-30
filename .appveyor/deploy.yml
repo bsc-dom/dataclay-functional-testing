@@ -7,7 +7,7 @@ skip_tags: true
 skip_branch_with_pr: true
 image: Ubuntu1804
 max_jobs: 1
-deploy_script: ./deploy.sh --plain --deploy-base
+deploy_script: ./deploy.sh --plain
 notifications:
   - provider: Email
     to:
