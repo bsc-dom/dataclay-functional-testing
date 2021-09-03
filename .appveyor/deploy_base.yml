@@ -11,7 +11,7 @@ deploy_script: ./deploy.sh --plain --deploy-base
 notifications:
   - provider: Email
     to:
-      - dgasull@bsc.es
+      - support-dataclay@bsc.es
     on_build_success: false
     on_build_failure: true
     on_build_status_changed: true

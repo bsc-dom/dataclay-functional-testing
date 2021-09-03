@@ -45,7 +45,7 @@ if __name__ == "__main__":
         attributes = Attributes()
         init_attributes(attributes)
 
-        param_keywords = ["1. test_language", "2. jdk_version", "3. operating system",
+        param_keywords = ["1. test_language", "2. version", "3. operating system",
                           "4. architecture", "5. docker image"]
 
         print("Post-processing results")

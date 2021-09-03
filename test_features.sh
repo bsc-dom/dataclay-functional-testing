@@ -59,6 +59,7 @@ function test_feature {
     -e DSJAVA_MIN_MEMORY=$DSJAVA_MIN_MEMORY \
     -e DSPYTHON_MAX_MEMORY=$DSPYTHON_MAX_MEMORY \
     -e DSPYTHON_MIN_MEMORY=$DSPYTHON_MIN_MEMORY \
+    -e LANGUAGE=$LANGUAGE \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp/dataClay/functional-testing/storage/:/testing/storage:rw \
     -v $PWD/resources:/testing/resources:ro \

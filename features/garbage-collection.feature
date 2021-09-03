@@ -64,12 +64,12 @@ Feature: Garbage Collection
       And "UserA" gets id of "obj_a" object into "oid_a" variable
       And "UserA" finishes the session
       And "UserA" starts a new session
-      And "UserA" waits 60 seconds
+      And "UserA" waits 100 seconds
       And "UserA" checks that object with id "oid_a" exists in dataClay
      When "UserA" deletes alias "myobj" from object "obj_a"
       And "UserA" finishes the session
      Then "UserA" starts a new session
-      And "UserA" waits 60 seconds
+      And "UserA" waits 100 seconds
       And "UserA" checks that object with id "oid_a" does not exist in dataClay
       And "UserA" finishes the session
 
