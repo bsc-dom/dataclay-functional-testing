@@ -1,0 +1,20 @@
+name: Python Functional Tests
+on:
+  - push
+  - workflow_dispatch
+  schedule:
+    - cron:  '0 6 * * *'
+jobs:
+  build:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        image: [normal, slim, apline]
+        python-version: [py36, py38, py310]
+        feature: [makepersistent, getbyalias, dynamicity, new-replica, new-version-consolidate, federation, garbage-collection, object-store]
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          ./test_features.sh --tests "${{ matrix.feature }}.feature" --platforms ${{ matrix.platform }} \
+          --image-types ${{ matrix.image }} --environments ${{ matrix.python-version }}
