@@ -1,7 +1,7 @@
 name: Java Functional Tests
 on:
-  - push
-  - workflow_dispatch
+  push:
+  workflow_dispatch:
   schedule:
     - cron:  '0 6 * * *'
 jobs:
