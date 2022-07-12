@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
-        image: [normal, slim, apline]
+        image: [normal]
         python-version: [py36, py38, py310]
         feature: [makepersistent, getbyalias, dynamicity, new-replica, new-version-consolidate, federation, garbage-collection, object-store]
     steps:

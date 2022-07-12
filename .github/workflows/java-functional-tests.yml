@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
-        image: [normal, slim, apline]
-        jdk-version: [jdk8, jdk11]
+        image: [normal]
+        jdk-version: [jdk11]
         feature: [makepersistent, getbyalias, dynamicity, new-replica, new-version-consolidate, federation, garbage-collection, object-store]
     steps:
       - uses: actions/checkout@v3
