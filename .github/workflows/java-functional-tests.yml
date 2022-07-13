@@ -9,7 +9,7 @@ jobs:
     runs-on: self-hosted
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        platform: [linux/amd64]
         image: [normal]
         jdk-version: [jdk11]
         feature: [makepersistent, getbyalias, dynamicity, new-replica, new-version-consolidate, federation, garbage-collection, object-store]
